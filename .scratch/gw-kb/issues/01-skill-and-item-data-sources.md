@@ -12,6 +12,8 @@ Where can the site get Guild Wars 1 skill data (name, description, energy/cast/r
 
 Research findings: `research/skill-and-item-data-sources` branch → `.scratch/gw-kb/research/skill-and-item-data-sources.md`
 
+Storage superseded by [Storage mapping](05-storage-mapping.md): game data is fetched during the build by an Astro loader at a pinned tag, and icons are optimised from GWW URLs during the build. Nothing is synced or committed.
+
 ## Answer
 
 **Use game IDs as keys and ArenaNet's own strings for game text.** The game skill ID is the same in template codes, the English Guild Wars Wiki (GWW), GWiki.fr and build-wars (e.g. VoS = 1759).

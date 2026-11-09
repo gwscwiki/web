@@ -25,3 +25,12 @@ From [Media conventions](04-media-conventions.md):
 - build the `<Loop src="<stem>" />` component with its glob lookup, and check that a missing stem fails the build
 - add the media CI check (size and dimension caps, unreferenced files) and the empty-alt build check
 - include one shared screenshot rendered from both the FR and EN pages, plus one `.fr` override
+
+From [Storage mapping](05-storage-mapping.md):
+- build the build-time Astro loader (build-wars JSON at a pinned tag, filtered to the IDs used in content) and cache its data store in CI; nothing is synced or committed. This replaces the sync script from Skill & item data sources.
+- check that `astro:assets` optimises remote GWW icons (`image.domains`)
+- check that Sveltia saves non-i18n frontmatter fields only to the French file, and that the merge helper gives EN pages the shared fields
+- check that `@buildwars/gw-templates` decodes a core code with empty slots
+- add the CI checks: EN page with no French twin, a `skillNotes` skill missing from the code, one default Party setup per Zone, each Role/Duty in exactly one Zone, the block-syntax lint
+- install `@sveltia/cms` exact-pinned and copy it into `public/admin/`
+- optionally try `bun run build`

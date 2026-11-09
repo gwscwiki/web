@@ -13,3 +13,9 @@ From [Content model](03-content-model.md):
 - A Gear page shows "worn by" (Loadouts) plus its Requirements.
 - Consumables have kinds (a possible filter).
 - Zone pages list Duties in run order and the default Party setup.
+
+From [Storage mapping](05-storage-mapping.md):
+- Every page entity is `docs` MDX typed by a `kind` field, so paths aren't constrained by schemas. Decide the folder and URL for each `kind` (e.g. Roles and Duties nested under their Zone; Builds and cores standalone, since Builds are shared across Zones).
+- References are by docs id (the path), so choose paths that won't need moving.
+- Party setups are YAML data with no pages yet; the Zone page shows the default one.
+- Decide whether EN fallback pages are kept out of the English search index (`pagefind = false`).
