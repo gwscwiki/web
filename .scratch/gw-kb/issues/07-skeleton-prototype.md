@@ -19,3 +19,9 @@ From [Visual editor](08-visual-editor.md), if Sveltia is chosen, prototype with 
 - check that a `relation` inside an editor component writes the slug
 - check `initial_locales` behaviour for FR-only entries
 - check the OAuth Worker under the GitHub Pages `base` path
+
+From [Media conventions](04-media-conventions.md):
+- check that Sveltia writes `@media/…` paths with `media_folder: src/assets/media` and `public_folder: '@media'`
+- build the `<Loop src="<stem>" />` component with its glob lookup, and check that a missing stem fails the build
+- add the media CI check (size and dimension caps, unreferenced files) and the empty-alt build check
+- include one shared screenshot rendered from both the FR and EN pages, plus one `.fr` override

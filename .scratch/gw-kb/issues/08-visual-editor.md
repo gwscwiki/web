@@ -34,7 +34,7 @@ Research findings: `research/visual-editor` branch → `.scratch/gw-kb/research/
     - No wrapper or nested components (`<Tabs>`, `<Aside>` with children); use `:::` asides.
     - No `import` lines; components are registered globally with `astro-auto-import`, listed after `starlight()`.
     - Set `omit_empty_optional_fields: true`.
-    - Screenshots are only optimised when they sit in a page bundle (`<slug>/index.mdx` with the image beside it).
+    - Screenshots are only optimised when they sit in a page bundle (`<slug>/index.mdx` with the image beside it). *(Superseded by [Media conventions](04-media-conventions.md): media live centrally under the `@media` alias instead.)*
     - Rich-text mode normalises some Markdown syntax.
   - **Verified hands-on:** custom blocks become form blocks, and imports, unknown JSX, `:::` asides and images round-trip byte-identical. Where it writes files on disk comes from the docs; the test backend writes nothing.
 - **Keystatic** (runner-up)

@@ -1,7 +1,8 @@
 # Storage mapping
 
 Type: grilling
-Status: open
+Status: claimed
+Assignee: krumpyzoid
 Blocked by: 02, 03, 08
 
 ## Question
@@ -35,3 +36,5 @@ The chosen editor's formats then drive the mapping. With Sveltia:
 - one YAML/JSON file per data entry with slug relations
 - polymorphic Requirement targets as `{ type, … }`
 - localised strings in shared data, either per-locale keys or `{ fr, en }` objects; this ticket chooses
+
+From [Media conventions](04-media-conventions.md): full-run videos are structured data on the Zone (url, Party setup, date, runner, commentary language), and a Duty may reference a run plus a timestamp. Decide where that data lives and how the Duty reference is stored. Media files themselves sit centrally under `src/assets/media/` (alias `@media`), so Sveltia's media folder is global, not per-bundle.
