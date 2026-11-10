@@ -1,0 +1,174 @@
+/*
+ * Layer 2 — semantic tokens (docs/design-system.md § Layers).
+ * Names say what a value is FOR (surface, text, border, tone…), per theme. Components read only these.
+ * Changing the look = editing this file (and tokens.css); components should not need to change.
+ *
+ * Dark is the default theme; light is opt-in through the header switch (ThemeSelect override).
+ * Flat surfaces, no gradients; glow is reserved for elite skills.
+ * The bottom block bridges these onto Starlight's own variables so its chrome follows the theme.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Page */
+  --gw-bg: var(--gw-gray-950);
+  --gw-bg-deep: var(--gw-gray-1000);
+
+  /* Surfaces, from flat to raised */
+  --gw-surface-1: var(--gw-gray-900);
+  --gw-surface-2: var(--gw-gray-850);
+  --gw-surface-3: var(--gw-gray-800);
+  --gw-surface-inset: var(--gw-gray-1000);
+  --gw-surface-hover: var(--gw-gray-800);
+
+  /* Borders */
+  --gw-border: var(--gw-gray-700);
+  --gw-border-strong: var(--gw-gray-600);
+  --gw-border-accent: var(--gw-teal-700);
+  --gw-divider: var(--gw-gray-800);
+
+  /* Ornaments (frame corners, dividers, heading flourishes) */
+  --gw-ornament: var(--gw-gray-500);
+  --gw-ornament-accent: var(--gw-teal-500);
+
+  /* Text */
+  --gw-text-strong: var(--gw-gray-50);
+  --gw-text: var(--gw-gray-200);
+  --gw-text-muted: var(--gw-gray-300);
+  --gw-text-subtle: var(--gw-gray-400);
+
+  /* Accent */
+  --gw-accent: var(--gw-teal-400);
+  --gw-accent-strong: var(--gw-teal-300);
+  --gw-accent-soft: var(--gw-teal-900);
+  --gw-accent-text: var(--gw-teal-300);
+  --gw-accent-fill: var(--gw-teal-600);
+  --gw-accent-fill-hover: var(--gw-teal-500);
+  --gw-on-accent: var(--gw-white);
+
+  /* Tones: tags, notices, requirement levels, bar marks */
+  --gw-tone-neutral-bg: var(--gw-gray-800);
+  --gw-tone-neutral-fg: var(--gw-gray-200);
+  --gw-tone-neutral-border: var(--gw-gray-600);
+  --gw-tone-accent-bg: var(--gw-teal-900);
+  --gw-tone-accent-fg: var(--gw-teal-200);
+  --gw-tone-accent-border: var(--gw-teal-700);
+  --gw-tone-info-bg: var(--gw-blue-800);
+  --gw-tone-info-fg: var(--gw-blue-300);
+  --gw-tone-info-border: var(--gw-blue-500);
+  --gw-tone-success-bg: var(--gw-green-800);
+  --gw-tone-success-fg: var(--gw-green-300);
+  --gw-tone-success-border: var(--gw-green-500);
+  --gw-tone-warning-bg: var(--gw-orange-800);
+  --gw-tone-warning-fg: var(--gw-orange-300);
+  --gw-tone-warning-border: var(--gw-orange-500);
+  --gw-tone-danger-bg: var(--gw-cherry-800);
+  --gw-tone-danger-fg: var(--gw-cherry-300);
+  --gw-tone-danger-border: var(--gw-cherry-500);
+
+  /* Game UI */
+  --gw-elite: var(--gw-orange-300);
+  --gw-energy: var(--gw-blue-500);
+  --gw-adrenaline: var(--gw-cherry-500);
+  --gw-health: var(--gw-cherry-500);
+  --gw-tooltip-bg: var(--gw-gray-1000);
+  --gw-tooltip-fg: var(--gw-gray-100);
+  --gw-tooltip-muted: var(--gw-gray-400);
+  --gw-tooltip-border: var(--gw-gray-600);
+  /* Item tooltips stay dark in both themes: gold name, blue mod lines, as in game. */
+  --gw-item-name: var(--gw-orange-300);
+  --gw-item-mod: var(--gw-blue-300);
+
+  /* Elevation & focus */
+  --gw-shadow-card: 0 1px 0 var(--gw-gray-1000), 0 8px 24px var(--gw-bg-deep);
+  --gw-shadow-pop: 0 12px 32px var(--gw-black);
+  --gw-glow-elite: 0 0 10px var(--gw-orange-800); /* the one glow: elite skills */
+  --gw-focus-ring: 0 0 0 2px var(--gw-bg), 0 0 0 4px var(--gw-accent);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --gw-bg: var(--gw-gray-50);
+  --gw-bg-deep: var(--gw-gray-100);
+
+  --gw-surface-1: var(--gw-gray-0);
+  --gw-surface-2: var(--gw-white);
+  --gw-surface-3: var(--gw-gray-100);
+  --gw-surface-inset: var(--gw-gray-100);
+  --gw-surface-hover: var(--gw-gray-100);
+
+  --gw-border: var(--gw-gray-200);
+  --gw-border-strong: var(--gw-gray-300);
+  --gw-border-accent: var(--gw-teal-500);
+  --gw-divider: var(--gw-gray-100);
+
+  --gw-ornament: var(--gw-gray-400);
+  --gw-ornament-accent: var(--gw-teal-600);
+
+  --gw-text-strong: var(--gw-gray-1000);
+  --gw-text: var(--gw-gray-800);
+  --gw-text-muted: var(--gw-gray-600);
+  --gw-text-subtle: var(--gw-gray-500);
+
+  --gw-accent: var(--gw-teal-600);
+  --gw-accent-strong: var(--gw-teal-700);
+  --gw-accent-soft: var(--gw-teal-200);
+  --gw-accent-text: var(--gw-teal-700);
+  --gw-accent-fill: var(--gw-teal-600);
+  --gw-accent-fill-hover: var(--gw-teal-700);
+
+  --gw-tone-neutral-bg: var(--gw-gray-100);
+  --gw-tone-neutral-fg: var(--gw-gray-700);
+  --gw-tone-neutral-border: var(--gw-gray-300);
+  --gw-tone-accent-bg: var(--gw-teal-200);
+  --gw-tone-accent-fg: var(--gw-teal-900);
+  --gw-tone-accent-border: var(--gw-teal-500);
+  --gw-tone-info-bg: var(--gw-blue-300);
+  --gw-tone-info-fg: var(--gw-blue-800);
+  --gw-tone-success-bg: var(--gw-green-300);
+  --gw-tone-success-fg: var(--gw-green-800);
+  --gw-tone-warning-bg: var(--gw-orange-300);
+  --gw-tone-warning-fg: var(--gw-orange-800);
+  --gw-tone-danger-bg: var(--gw-cherry-300);
+  --gw-tone-danger-fg: var(--gw-cherry-800);
+
+  --gw-elite: var(--gw-orange-500);
+  --gw-tooltip-bg: var(--gw-gray-950);
+  --gw-item-name: var(--gw-orange-300);
+  --gw-item-mod: var(--gw-blue-300);
+
+  --gw-shadow-card: 0 1px 2px var(--gw-gray-200);
+  --gw-shadow-pop: 0 10px 28px var(--gw-gray-400);
+  --gw-glow-elite: 0 0 8px var(--gw-orange-300);
+}
+
+/* ---- Bridge: Starlight reads its own variables; point them at ours (both themes). ---- */
+:root,
+:root[data-theme='light'] {
+  --sl-font: var(--gw-font-body);
+  --sl-font-mono: var(--gw-font-mono);
+
+  --sl-color-white: var(--gw-text-strong);
+  --sl-color-gray-1: var(--gw-text);
+  --sl-color-gray-2: var(--gw-text);
+  --sl-color-gray-3: var(--gw-text-muted);
+  --sl-color-gray-4: var(--gw-text-subtle);
+  --sl-color-gray-5: var(--gw-border);
+  --sl-color-gray-6: var(--gw-surface-2);
+  --sl-color-gray-7: var(--gw-surface-2);
+  --sl-color-black: var(--gw-bg);
+
+  --sl-color-accent-low: var(--gw-accent-soft);
+  --sl-color-accent: var(--gw-accent);
+  --sl-color-accent-high: var(--gw-accent-strong);
+  --sl-color-text-accent: var(--gw-accent-text);
+  --sl-color-text-invert: var(--gw-on-accent);
+  --sl-color-bg-nav: var(--gw-surface-1);
+  --sl-color-bg-sidebar: var(--gw-bg);
+  --sl-color-bg-inline-code: var(--gw-surface-3);
+  --sl-color-hairline-light: var(--gw-border);
+  --sl-color-hairline: var(--gw-divider);
+  --sl-color-hairline-shade: var(--gw-bg-deep);
+}

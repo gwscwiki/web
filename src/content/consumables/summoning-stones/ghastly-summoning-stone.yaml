@@ -1,0 +1,6 @@
+gwwTitle: Ghastly Summoning Stone
+requirements:
+  - level: recommended
+    target:
+      type: strategy
+      strategy: fow/strategies/rollway

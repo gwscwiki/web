@@ -1,0 +1,12 @@
+---
+/** A Requirement level as a Tag. The single place where level → tone is decided. */
+import type { Requirement } from '../../lib/kb';
+import { langFromLocals, t } from '../../lib/ui';
+import { Tag } from '../ui';
+
+interface Props { level: Requirement['level']; size?: 'sm' | 'md' }
+const _ = t(langFromLocals(Astro.locals));
+const tone = { required: 'danger', recommended: 'warning', optional: 'neutral' } as const;
+---
+
+<Tag tone={tone[Astro.props.level]} size={Astro.props.size}>{_(Astro.props.level)}</Tag>

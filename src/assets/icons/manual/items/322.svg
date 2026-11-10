@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Hand-drawn generic scythe icon (original art, not game art) for weapon base 322. -->
+  <rect width="64" height="64" fill="#111819"/>
+  <rect x="1.5" y="1.5" width="61" height="61" fill="none" stroke="#283637"/>
+  <path d="M18 58 44 10" stroke="#6b4a2b" stroke-width="4.5" stroke-linecap="round"/>
+  <path d="M18 58 44 10" stroke="#8a6440" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M27 50h-4M24 45l3 1.5" stroke="#3a2a1a" stroke-width="2" stroke-linecap="round"/>
+  <path d="M43 12C34 8 20 10 9 20c11-4 22-4 31 1z" fill="#c8d3d2"/>
+  <path d="M43 12C34 8 20 10 9 20c7-3 15-4 22-3" fill="none" stroke="#f2f5f4" stroke-width="1"/>
+  <path d="M40 21 43 12" stroke="#7d9192" stroke-width="2"/>
+  <circle cx="44" cy="11" r="2.4" fill="#3fbcac"/>
+</svg>

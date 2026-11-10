@@ -1,0 +1,16 @@
+gwwTitle: Birthday Cupcake
+requirements:
+  - level: recommended
+    target:
+      type: role
+      role: fow/roles/vos
+    reason:
+      fr: Vitesse de course.
+      en: Running speed.
+  - level: recommended
+    target:
+      type: role
+      role: fow/roles/solo-vos
+    reason:
+      fr: Vitesse de course.
+      en: Running speed.

@@ -1,0 +1,33 @@
+{
+  "name": "gw-kb",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "predev": "node scripts/copy-sveltia.mjs && node scripts/sync-icons.mjs",
+    "prebuild": "node scripts/copy-sveltia.mjs && node scripts/sync-icons.mjs",
+    "check:content": "node scripts/check-content.mjs",
+    "check:styles": "node scripts/check-styles.mjs",
+    "icons:sync": "node scripts/sync-icons.mjs"
+  },
+  "dependencies": {
+    "@astro-community/astro-embed-youtube": "0.5.10",
+    "@astrojs/markdown-remark": "7.3.6",
+    "@astrojs/starlight": "0.42.10",
+    "@buildwars/gw-templates": "1.1.1",
+    "@fontsource-variable/cinzel": "5.3.0",
+    "@sveltia/cms": "0.262.1",
+    "astro": "7.4.8",
+    "astro-auto-import": "0.6.0",
+    "sharp": "^0.34.0",
+    "starlight-links-validator": "0.27.0",
+    "unist-util-visit": "5.1.0",
+    "yaml": "2.9.1"
+  }
+}

@@ -1,0 +1,8 @@
+name:
+  fr: Dagues q9
+  en: q9 daggers
+weapons:
+  - weapons/vampiric-daggers-of-enchanting
+note:
+  fr: Le rôdeur peut prendre des dagues à faible prérequis ; +15 sous enchantement ou posture.
+  en: Rangers can use low-req daggers; +15 while enchanted or in a stance.

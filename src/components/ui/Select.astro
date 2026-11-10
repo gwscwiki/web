@@ -1,0 +1,59 @@
+---
+/**
+ * Select — labelled native <select> styled to the theme. Options go in the default slot.
+ *
+ *   <Select label="Zone" name="zone"><option value="">Tous</option>…</Select>
+ */
+interface Props {
+  label: string;
+  name: string;
+  class?: string;
+}
+const { label, name, class: cls } = Astro.props;
+---
+
+<label class:list={['gw-select', cls]}>
+  <span class="gw-select__label">{label}</span>
+  <span class="gw-select__box">
+    <select name={name}><slot /></select>
+  </span>
+</label>
+
+<style>
+  .gw-select { display: inline-flex; flex-direction: column; gap: var(--gw-space-1); min-width: 9rem; }
+  .gw-select__label {
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: var(--gw-text-3xs);
+    letter-spacing: var(--gw-tracking-wider);
+    text-transform: uppercase;
+    color: var(--gw-text-subtle);
+  }
+  .gw-select__box { position: relative; }
+  .gw-select__box::after {
+    content: '';
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    width: 0.4rem;
+    height: 0.4rem;
+    border-right: 2px solid var(--gw-text-muted);
+    border-bottom: 2px solid var(--gw-text-muted);
+    transform: translateY(-70%) rotate(45deg);
+    pointer-events: none;
+  }
+  select {
+    appearance: none;
+    width: 100%;
+    padding: 0.55rem 2.2rem 0.55rem 0.75rem;
+    border: 1px solid var(--gw-border-strong);
+    border-radius: var(--gw-radius-md);
+    background: var(--gw-surface-2);
+    color: var(--gw-text-strong);
+    font: inherit;
+    font-size: var(--gw-text-sm);
+    cursor: pointer;
+  }
+  select:hover { border-color: var(--gw-border-accent); }
+  select:focus-visible { outline: none; box-shadow: var(--gw-focus-ring); }
+</style>

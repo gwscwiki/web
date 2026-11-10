@@ -1,0 +1,15 @@
+---
+/**
+ * Divider — ornamental rule: line, diamond centrepiece, line (ornaments.css `.gw-divider`).
+ *
+ *   <Divider />   <Divider tone="accent" />
+ */
+interface Props { tone?: 'neutral' | 'accent'; class?: string }
+const { tone = 'neutral', class: cls } = Astro.props;
+---
+
+<div class:list={['gw-divider', tone === 'accent' && 'gw-divider--accent', cls]} role="separator"><span></span></div>
+
+<style>
+  .gw-divider--accent { color: var(--gw-ornament-accent); }
+</style>

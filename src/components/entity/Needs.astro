@@ -1,0 +1,68 @@
+---
+/** Consumables with their Requirement level, linking to the Guild Wars Wiki. `showVia` names the target that matched. */
+import { consumableName, consumableWiki, titleOf, tr, type Need } from '../../lib/kb';
+import { iconForConsumable } from '../../lib/gw/icons';
+import { langFromLocals, t } from '../../lib/ui';
+import { GameIcon } from '../ui';
+import RequirementLevel from './RequirementLevel.astro';
+
+interface Props { needs: Need[]; showVia?: boolean }
+const { needs, showVia = false } = Astro.props;
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const rows = await Promise.all(
+  needs.map(async (n) => ({
+    n,
+    label: consumableName(n.item, lang),
+    href: consumableWiki(n.item),
+    icon: iconForConsumable(n.item),
+    via: showVia ? await titleOf(n.via, lang) : undefined,
+    reason: tr(n.req.reason, lang),
+  })),
+);
+---
+
+{
+  rows.length === 0 ? (
+    <p class="gw-muted">{_('none')}</p>
+  ) : (
+    <ul class="gw-needs">
+      {rows.map((r) => (
+        <li>
+          <GameIcon src={r.icon} label={r.label} size="sm" decorative />
+          <div class="gw-needs__body">
+            <div class="gw-needs__line">
+              <a href={r.href} target="_blank" rel="noopener">{r.label}</a>
+              {r.via && <span class="gw-muted">{_('via')} {r.via}</span>}
+            </div>
+            {r.reason && (
+              <p class="gw-needs__reason">
+                {r.reason.text}
+                {r.reason.untranslated && <em class="gw-muted"> ({_('notTranslated')})</em>}
+              </p>
+            )}
+          </div>
+          <RequirementLevel level={r.n.req.level} size="sm" />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .gw-needs { list-style: none; margin: 0; padding: 0; }
+  .gw-needs li {
+    display: flex;
+    align-items: center;
+    gap: var(--gw-space-3);
+    margin: 0;
+    padding: var(--gw-space-2) 0;
+    border-bottom: 1px solid var(--gw-divider);
+  }
+  .gw-needs li:last-child { border-bottom: 0; }
+  .gw-needs__body { flex: 1; min-width: 0; }
+  .gw-needs__line { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gw-space-2); }
+  .gw-needs__line a { color: var(--gw-text-strong); font-weight: var(--gw-weight-semibold); text-decoration: none; }
+  .gw-needs__line a:hover { color: var(--gw-accent-strong); text-decoration: underline; }
+  .gw-needs__reason { margin: 0.15rem 0 0; font-size: var(--gw-text-sm); color: var(--gw-text-muted); }
+</style>

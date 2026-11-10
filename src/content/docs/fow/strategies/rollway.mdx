@@ -1,0 +1,97 @@
+---
+kind: strategy
+title: Roll-way
+description: "La FoW à 8 façon [SenT] : runs rapides et sûrs d’environ 7 minutes."
+label: Roll-way
+time: ~7 min
+roles:
+  - role: fow/roles/t1
+    build: builds/sf-ranger/dash-dark-prison
+    duties:
+      - fow/duties/hold
+      - fow/duties/tos
+      - fow/duties/bf
+    route: hold, tos, bf
+  - role: fow/roles/t3
+    build: builds/sf-ranger/iau-recall
+    duties:
+      - fow/duties/quicky
+      - fow/duties/sheps
+      - fow/duties/worms
+      - fow/duties/forest-wolf
+      - fow/duties/griffs
+    route: quicky, shepps (+ worms if VoS is late), forest wolf, griffs
+  - role: fow/roles/t4
+    build: builds/sf-assassin/ae-dash
+    duties:
+      - fow/duties/quicky
+      - fow/duties/hunt
+      - fow/duties/cave
+    route: quicky, take hunt, cave
+  - role: fow/roles/mt
+    build: builds/sf-assassin/ap-mt
+    duties:
+      - fow/duties/quicky
+      - fow/duties/90s
+      - fow/duties/south
+      - fow/duties/tos
+      - fow/duties/mage
+    route: quicky, 90s, south, tos quest, mage/lord (stone)
+  - role: fow/roles/v1
+    build: builds/vos/rollway-dw
+    duties:
+      - fow/duties/open-forge
+      - fow/duties/90s
+      - fow/duties/top
+      - fow/duties/south
+      - fow/duties/quests
+      - fow/duties/khobay
+    route: open forge spike, 90s, top, south, top quests, khobay
+  - role: fow/roles/v2
+    build: builds/vos/da
+    duties:
+      - fow/duties/forge
+      - fow/duties/top
+      - fow/duties/north
+      - fow/duties/toc
+    route: forge left, top, north, toc (pop beasts, wolf)
+  - role: fow/roles/v3
+    build: builds/vos/da
+    duties:
+      - fow/duties/camp
+      - fow/duties/backway
+      - fow/duties/bridge
+      - fow/duties/griffs
+    route: camp, (backway) full bridge, take griffs
+  - role: fow/roles/v4
+    build: builds/vos/da
+    duties:
+      - fow/duties/toc
+      - fow/duties/forge
+      - fow/duties/menzies
+      - fow/duties/text-wolf
+    route: toc, forge, menz, text/wolf
+sources:
+  - title: Roll-way
+    url: https://wiki.gwscr.com/wiki/Rollway
+    edited: 2026-09-17
+    site: Speedclear Wiki
+---
+
+## Principe
+
+La roll-way, c’est la FoW telle que la guilde [SenT] la faisait à l’origine : des runs **rapides et sûrs d’environ 7 minutes**, sans dépendre de spawns parfaits. C’est la tactique casual la plus jouée par les guildes FoW ; certains rôles ne conviennent pas aux débutants. Les variantes à effectif réduit (7 à 2 joueurs) ont leur propre page.
+
+**Seul le VoS de la ToC** aggro les ennemis de la quête Tower of Courage (rangers et abyssaux). Le reste de l’équipe passe par le **midway** : traverser la première boule, monter la rampe vers la ToC, puis continuer vers le quicky sans aggro la ToC — sinon le VoS de la ToC vous en voudra.
+
+## Avant de partir
+
+Le kit speedclear habituel : pcons, parchemins de résurrection, pierres de puissance, un conset et des pierres d’invocation. Pas de boost de moral pour toute l’équipe, sauf nécessité.
+
+L’équipement par rôle vient de la même page, en trois temps : **de base** (pour toute la run), **forêt** et **passage arrière de la forge**. Ici, il est rattaché aux builds et aux duties : chaque rôle ci-dessus voit les sets que ses duties demandent. La source ne donne pas de niveau d’exigence ; « recommandé » est notre lecture, « optionnel » quand elle dit « utile mais pas obligatoire ».
+
+## Les tâches
+
+Chaque tâche de la route (hold, quicky, 90s, 360, top, north/south, forest, BF…) a sa page de duty, qui reprend la définition de la source.
+
+La source signale que la page doit être mise à jour après l’équilibrage 2026.

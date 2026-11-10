@@ -1,0 +1,5 @@
+name:
+  fr: Arme de mêlée de forêt
+  en: Forest melee weapon
+weapons:
+  - weapons/ranger-forest-melee

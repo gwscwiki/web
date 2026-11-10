@@ -1,0 +1,364 @@
+---
+/**
+ * Generated part of an entity page (Information architecture, cross-links table).
+ * Rendered above the prose by the MarkdownContent override. Reads shared data from the French twin.
+ */
+import { getEntry } from 'astro:content';
+import { YouTube } from '@astro-community/astro-embed-youtube';
+import SkillBar from '../blocks/SkillBar.astro';
+import BuildBar from '../blocks/BuildBar.astro';
+import { List, Panel, Tag } from '../ui';
+import Needs from './Needs.astro';
+import Kit from './Kit.astro';
+import Composition from './Composition.astro';
+import LoadoutTable from '../gear/LoadoutTable.astro';
+import GearNeeds from '../gear/GearNeeds.astro';
+import {
+  buildsOfCore, defaultStrategy, derived, entity, gearNeedsForDuty, gearNeedsOf, getShared, mergedLoadout,
+  needsFor, refId, rolesRunning, strategiesOf, strategiesOfRole, titleOf, tr, urlOf, zoneOf,
+  zoneIdOfStrategy, type Entity, type StrategyRole,
+} from '../../lib/kb';
+import { decodeBar } from '../../lib/gw/templates';
+import { PROFESSIONS } from '../../lib/gw/names';
+import { langFromLocals, t } from '../../lib/ui';
+
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const colon = lang === 'fr' ? ' :' : ':';
+const route = Astro.locals.starlightRoute;
+const shared = route.entry ? await getShared(route.entry.id) : undefined;
+const kind = shared?.data.kind;
+const e = shared as unknown as Entity;
+const L = async (id: string | { id: string }) => ({ href: urlOf(id, lang), text: await titleOf(id, lang) });
+const skill = async (id: number) => (await getEntry('skills', String(id)))?.data;
+const skillLabel = async (id: number) => {
+  const s = await skill(id);
+  return s ? `${s.name[lang]}${s.nickname ? ` (${s.nickname})` : ''}` : `#${id}`;
+};
+const profs = (code: string) => {
+  const b = decodeBar(code);
+  return `${PROFESSIONS[b.primary].abbr}/${b.secondary ? PROFESSIONS[b.secondary].abbr : '–'}`;
+};
+/** One composition row of a Strategy, ready to render. */
+const compRow = async (row: StrategyRole) => {
+  const build = row.build ? await entity(row.build, 'build') : undefined;
+  return {
+    id: refId(row.role),
+    role: await L(row.role),
+    build: build ? { ...(await L(build.id)), profs: profs(build.data.code) } : undefined,
+    duties: await Promise.all(row.duties.map(L)),
+    route: row.route,
+  };
+};
+
+let p: Record<string, any> = {};
+
+if (kind === 'zone') {
+  const z = e as Entity<'zone'>;
+  const def = await defaultStrategy(z.id);
+  p.roles = await Promise.all(z.data.roles.map(L));
+  p.duties = await Promise.all(z.data.duties.map(L));
+  p.default = def && { ...(await L(def.id)), label: def.data.label, rows: await Promise.all(def.data.roles.map(compRow)) };
+  p.strategies = await Promise.all(
+    (await strategiesOf(z.id)).map(async (s) => ({ ...(await L(s.id)), label: s.data.label, size: s.data.roles.length, time: s.data.time, isDefault: s.data.default, credited: s.data.sources.length > 0 })),
+  );
+  p.runs = await Promise.all(z.data.runs.map(async (r) => ({ ...r, strategy: await titleOf(r.strategy, lang) })));
+  p.needs = await needsFor([z.id]);
+}
+
+if (kind === 'strategy') {
+  const s = e as Entity<'strategy'>;
+  p.zone = await L(zoneIdOfStrategy(s.id));
+  p.rows = await Promise.all(s.data.roles.map(compRow));
+  p.needs = await needsFor([s.id]);
+}
+
+if (kind === 'role') {
+  const r = e as Entity<'role'>;
+  p.zone = (await zoneOf(r.id)) && (await L((await zoneOf(r.id))!.id));
+  p.strategies = await Promise.all(
+    (await strategiesOfRole(r.id))
+      .filter((x) => x.row)
+      .map(async (x) => ({ ...(await compRow(x.row!)), ...(await L(x.strategy.id)), strategyId: x.strategy.id, isDefault: x.strategy.data.default })),
+  );
+}
+
+if (kind === 'duty') {
+  const d = e as Entity<'duty'>;
+  const zone = await zoneOf(d.id);
+  p.gear = (await gearNeedsForDuty(d.id)).map((x) => ({ ...x.need, holder: x.holder.id }));
+  p.needs = await needsFor([d.id]);
+  const hasLoop = /<Loop\s/.test(shared?.body ?? '');
+  const run = d.data.run && zone?.data.runs.find((x) => x.id === d.data.run!.id);
+  if (d.data.run && !run) throw new Error(`${d.id}: run "${d.data.run.id}" not found on its Zone`);
+  if (run && !hasLoop) {
+    const [sec, m = '0', h = '0'] = d.data.run!.at.split(':').reverse();
+    p.run = { id: run.youtube, at: d.data.run!.at, seconds: Number(sec) + Number(m) * 60 + Number(h) * 3600 };
+  }
+}
+
+if (kind === 'build') {
+  const b = e as Entity<'build'>;
+  const d = await derived(b);
+  if (d.errors.length) throw new Error(`${b.id}: ${d.errors.join('; ')}`);
+  p.core = await L(d.core.id);
+  p.swaps = await Promise.all(d.swaps.map(async (s) => ({ from: await skillLabel(s.from), to: await skillLabel(s.to) })));
+  p.filled = await Promise.all(d.filled.map(async (f) => skillLabel(f.skill)));
+  p.addedSecondary = d.addedSecondary && PROFESSIONS[d.addedSecondary].abbr;
+  p.notes = await Promise.all(
+    b.data.skillNotes.map(async (n) => ({
+      skill: await skillLabel(n.skill),
+      note: tr(n.note, lang),
+      alternatives: await Promise.all(
+        n.alternatives.map(async (a) => {
+          const s = await skill(a.skill);
+          const prof = s && s.profession !== d.bar.primary && s.profession !== d.bar.secondary ? s.profession : 0;
+          return { skill: await skillLabel(a.skill), note: tr(a.note, lang), implies: prof ? `${PROFESSIONS[d.bar.primary].abbr}/${PROFESSIONS[prof].abbr}` : undefined };
+        }),
+      ),
+    })),
+  );
+  p.loadout = await mergedLoadout(b);
+  p.gear = await gearNeedsOf(b);
+  p.roles = await Promise.all(
+    (await rolesRunning(b.id)).map(async (x) => ({ role: await L(x.row.role), strategy: await L(x.strategy.id) })),
+  );
+}
+
+if (kind === 'core') {
+  const c = e as Entity<'core'>;
+  p.loadout = await mergedLoadout(c);
+  p.gear = await gearNeedsOf(c);
+  p.builds = await Promise.all(
+    (await buildsOfCore(c.id)).map(async (b) => {
+      const d = await derived(b);
+      return {
+        ...(await L(b.id)),
+        profs: profs(b.data.code),
+        swaps: await Promise.all(d.swaps.map(async (s) => `${await skillLabel(s.from)} → ${await skillLabel(s.to)}`)),
+        filled: await Promise.all(d.filled.map(async (f) => `+ ${await skillLabel(f.skill)}`)),
+        uses: (await rolesRunning(b.id)).length,
+      };
+    }),
+  );
+}
+---
+
+{
+  kind && (
+    <div class="gw-entity not-content" data-kind={kind}>
+      {kind === 'zone' && (
+        <>
+          <div class="gw-entity__pair">
+            <Panel kicker={_('zone')} title={_('strategies')}>
+              <List>
+                {p.strategies.map((s: any) => (
+                  <li>
+                    <a href={s.href}><strong>{s.text}</strong></a>
+                    <span class="gw-muted"> · {s.size} {_('players')}{s.time && ` · ${s.time}`}</span>
+                    {s.isDefault && <> <Tag size="sm" tone="accent">{_('default')}</Tag></>}
+                    {s.credited && <> <Tag size="sm">{_('community')}</Tag></>}
+                  </li>
+                ))}
+              </List>
+            </Panel>
+            <Panel kicker={_('zone')} title={_('runOrder')}>
+              <List ordered class="gw-entity__cols">{p.duties.map((d: any) => <li><a href={d.href}>{d.text}</a></li>)}</List>
+            </Panel>
+          </div>
+          {p.default && (
+            <Panel kicker={_('defaultSetup')} title={p.default.label}>
+              <a slot="actions" href={p.default.href}>{_('open')} →</a>
+              <Composition rows={p.default.rows} />
+            </Panel>
+          )}
+          {p.runs.length > 0 && (
+            <Panel title={_('runs')}>
+              {p.runs.map((r: any) => (
+                <div class="gw-entity__run">
+                  <p class="gw-muted">{r.strategy} · {r.runner} · {r.date.toISOString().slice(0, 10)} · {r.lang}</p>
+                  <YouTube id={r.youtube} />
+                </div>
+              ))}
+            </Panel>
+          )}
+          <Panel title={_('consumables')}><Needs needs={p.needs} /></Panel>
+        </>
+      )}
+
+      {kind === 'strategy' && (
+        <>
+          <Panel kicker={p.zone.text} title={_('composition')}>
+            <Composition rows={p.rows} showRoute />
+          </Panel>
+          <Panel title={_('kitByRole')}>
+            <p class="gw-muted gw-entity__hint">{_('kitHint')}</p>
+            <div class="gw-entity__kits">
+              {p.rows.map((r: any) => (
+                <details class="gw-entity__kit">
+                  <summary>
+                    <strong>{r.role.text}</strong>
+                    {r.build && <span class="gw-muted"> · {r.build.text} <Tag size="sm" tone="accent">{r.build.profs}</Tag></span>}
+                  </summary>
+                  <Kit strategy={e.id} role={r.id} />
+                </details>
+              ))}
+            </div>
+          </Panel>
+          {p.needs.length > 0 && <Panel title={_('consumablesTeam')}><Needs needs={p.needs} /></Panel>}
+        </>
+      )}
+
+      {kind === 'role' && (
+        <>
+          {p.strategies.length === 0 ? (
+            <Panel><p class="gw-muted">{_('inNoStrategy')}</p></Panel>
+          ) : (
+            p.strategies.map((s: any) => (
+              <Panel kicker={_('strategy')} title={s.text} level={2}>
+                <a slot="actions" href={s.href}>{_('open')} →</a>
+                <p class="gw-entity__line">
+                  {s.isDefault && <Tag size="sm" tone="accent">{_('default')}</Tag>}
+                  {s.build ? <>{_('build')} <a href={s.build.href}>{s.build.text}</a> <Tag size="sm" tone="accent">{s.build.profs}</Tag></> : <span class="gw-muted">{_('noPublishedBuild')}</span>}
+                </p>
+                <p class="gw-entity__line">
+                  <span class="gw-muted">{_('duties')}{colon}</span>{' '}
+                  {s.duties.length ? s.duties.map((d: any) => <Tag href={d.href} tone="info" size="sm">{d.text}</Tag>) : <span class="gw-muted">{_('none')}</span>}
+                </p>
+                {s.route && <p class="gw-entity__route"><span class="gw-muted">{_('sourceRoute')}{colon}</span> <q>{s.route}</q></p>}
+                <details class="gw-entity__kit">
+                  <summary><strong>{_('whatToBring')}</strong></summary>
+                  <Kit strategy={s.strategyId} role={e.id} />
+                </details>
+              </Panel>
+            ))
+          )}
+        </>
+      )}
+
+      {kind === 'duty' && (
+        <>
+          {p.run && (
+            <Panel title={`${_('noLoop')} (${p.run.at})`}>
+              <YouTube id={p.run.id} params={`start=${p.run.seconds}`} />
+            </Panel>
+          )}
+          {p.gear.length > 0 && <Panel title={_('gearForDuty')}><GearNeeds needs={p.gear} hideDuties /></Panel>}
+          {p.needs.length > 0 && <Panel title={_('consumables')}><Needs needs={p.needs} /></Panel>}
+        </>
+      )}
+
+      {kind === 'build' && (
+        <>
+          <Panel kicker={_('core')} title={p.core.text}>
+            <a slot="actions" href={p.core.href}>{_('open')} →</a>
+            <BuildBar build={e.id} />
+            {p.swaps.length + p.filled.length === 0 ? (
+              <p class="gw-muted">{_('noSwaps')}</p>
+            ) : (
+              <>
+                <h3 class="gw-entity__sub">{_('swaps')}</h3>
+                <List>
+                  {p.swaps.map((s: any) => <li><span class="gw-muted">{s.from}</span> → <strong>{s.to}</strong></li>)}
+                  {p.filled.map((f: string) => <li>{_('filled')} : <strong>{f}</strong></li>)}
+                </List>
+              </>
+            )}
+            {p.addedSecondary && <p>+ {_('secondary')} <Tag size="sm" tone="accent">{p.addedSecondary}</Tag></p>}
+          </Panel>
+          {p.notes.length > 0 && (
+            <Panel title={_('skillNotes')}>
+              <dl class="gw-entity__notes">
+                {p.notes.map((n: any) => (
+                  <>
+                    <dt>{n.skill}</dt>
+                    {n.note && <dd>{n.note.text}{n.note.untranslated && <em class="gw-muted"> ({_('notTranslated')})</em>}</dd>}
+                    {n.alternatives.length > 0 && (
+                      <dd>
+                        <span class="gw-entity__sub">{_('alternatives')}</span>
+                        <List tone="info">
+                          {n.alternatives.map((a: any) => (
+                            <li>
+                              <strong>{a.skill}</strong>{a.implies && <> <Tag size="sm" tone="info">{a.implies}</Tag></>}
+                              {a.note && <span class="gw-muted"> — {a.note.text}{a.note.untranslated && <em> ({_('notTranslated')})</em>}</span>}
+                            </li>
+                          ))}
+                        </List>
+                      </dd>
+                    )}
+                  </>
+                ))}
+              </dl>
+            </Panel>
+          )}
+          <Panel title={_('loadout')}><LoadoutTable loadout={p.loadout} /></Panel>
+          <Panel title={_('gearByDuty')}><GearNeeds needs={p.gear} /></Panel>
+          <Panel title={_('runningRoles')}>
+            <List>{p.roles.length ? p.roles.map((r: any) => <li><a href={r.strategy.href}>{r.strategy.text}</a> · <a href={r.role.href}>{r.role.text}</a></li>) : <li class="gw-muted">{_('none')}</li>}</List>
+          </Panel>
+        </>
+      )}
+
+      {kind === 'core' && (
+        <>
+          <Panel kicker={_('core')} title={(e as Entity<'core'>).data.label}>
+            <SkillBar code={(e as Entity<'core'>).data.code} />
+          </Panel>
+          <Panel title={_('loadout')}><LoadoutTable loadout={p.loadout} /></Panel>
+          <Panel title={_('gearByDuty')}><GearNeeds needs={p.gear} /></Panel>
+          <Panel title={_('builds')}>
+            <List>
+              {p.builds.map((b: any) => (
+                <li>
+                  <a href={b.href}><strong>{b.text}</strong></a> <Tag size="sm" tone="accent">{b.profs}</Tag>
+                  {b.swaps.length + b.filled.length > 0 && <span class="gw-muted"> — {[...b.swaps, ...b.filled].join(', ')}</span>}
+                  {b.uses > 0 && <span class="gw-muted"> · {b.uses} {_('roleSlots')}</span>}
+                </li>
+              ))}
+            </List>
+          </Panel>
+        </>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .gw-entity { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gw-space-4); margin-bottom: var(--gw-space-6); }
+  .gw-entity:empty { display: none; }
+  .gw-entity__pair { display: grid; gap: var(--gw-space-4); }
+  @media (min-width: 40rem) { .gw-entity__pair { grid-template-columns: 1fr 1fr; } }
+
+  .gw-entity a { color: var(--gw-accent-text); text-decoration: none; }
+  .gw-entity a:hover { color: var(--gw-accent-strong); text-decoration: underline; }
+  .gw-entity :global(.gw-tag) { margin-inline-end: var(--gw-space-1); }
+  .gw-entity :global(.gw-bar) { margin-top: 0; box-shadow: none; }
+  .gw-entity :global(.gw-entity__cols) { columns: 2 10rem; }
+
+  .gw-entity__sub {
+    display: block;
+    margin: var(--gw-space-4) 0 var(--gw-space-1);
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: var(--gw-text-3xs);
+    letter-spacing: var(--gw-tracking-wider);
+    text-transform: uppercase;
+    color: var(--gw-text-subtle);
+  }
+  .gw-entity__line { margin: 0 0 var(--gw-space-2); }
+  .gw-entity__route { margin: 0 0 var(--gw-space-2); font-size: var(--gw-text-sm); }
+  .gw-entity__hint { margin: 0 0 var(--gw-space-3); font-size: var(--gw-text-sm); }
+
+  .gw-entity__kits { display: grid; gap: var(--gw-space-2); }
+  .gw-entity__kit { border: 1px solid var(--gw-divider); border-radius: var(--gw-radius-md); padding: var(--gw-space-2) var(--gw-space-3); background: var(--gw-surface-inset); }
+  .gw-entity__kit > summary { cursor: pointer; padding: var(--gw-space-1) 0; }
+  .gw-entity__kit[open] > summary { margin-bottom: var(--gw-space-3); border-bottom: 1px solid var(--gw-divider); padding-bottom: var(--gw-space-2); }
+
+  .gw-entity__notes { margin: 0; }
+  .gw-entity__notes dt { margin-top: var(--gw-space-4); font-weight: var(--gw-weight-bold); color: var(--gw-text-strong); }
+  .gw-entity__notes dt:first-child { margin-top: 0; }
+  .gw-entity__notes dd { margin: var(--gw-space-1) 0 0; color: var(--gw-text); }
+
+  .gw-entity__run { max-width: 40rem; }
+  .gw-entity__run + .gw-entity__run { margin-top: var(--gw-space-4); }
+</style>

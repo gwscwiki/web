@@ -1,0 +1,8 @@
+name:
+  fr: Arc long
+  en: Longbow
+weapons:
+  - weapons/longbow
+note:
+  fr: Pour tirer (pull).
+  en: For pulling.

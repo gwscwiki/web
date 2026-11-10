@@ -1,0 +1,50 @@
+---
+/** A Loadout: the base armor set and the weapon sets carried by default. */
+import { gearSet, tr, type Loadout } from '../../lib/kb';
+import { langFromLocals, t } from '../../lib/ui';
+import GearSetView from './GearSetView.astro';
+import WeaponSetCard from './WeaponSetCard.astro';
+
+interface Props { loadout: Loadout }
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const { loadout } = Astro.props;
+const name = async (id: string) => tr((await gearSet(id)).data.name, lang)!.text;
+const armor = loadout.armor ? { id: loadout.armor, name: await name(loadout.armor) } : undefined;
+---
+
+<div class="gw-loadout">
+  {
+    armor ? (
+      <div>
+        <p class="gw-loadout__label">{_('baseArmor')} · <span class="gw-loadout__name">{armor.name}</span></p>
+        <GearSetView set={armor.id} />
+      </div>
+    ) : (
+      <p class="gw-muted">{_('noBaseArmor')}</p>
+    )
+  }
+  {
+    loadout.weapons.length > 0 && (
+      <div>
+        <p class="gw-loadout__label">{_('weaponSets')}</p>
+        <div class="gw-weaponcards">{loadout.weapons.map((id) => <WeaponSetCard set={id} />)}</div>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .gw-loadout { display: grid; gap: var(--gw-space-4); }
+  .gw-loadout__label {
+    margin: 0 0 var(--gw-space-2);
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: var(--gw-text-3xs);
+    letter-spacing: var(--gw-tracking-wider);
+    text-transform: uppercase;
+    color: var(--gw-text-subtle);
+  }
+  .gw-loadout__name { color: var(--gw-text-strong); font-weight: var(--gw-weight-semibold); font-size: var(--gw-text-sm); }
+  .gw-loadout__label .gw-loadout__name { font-family: var(--gw-font-body); letter-spacing: normal; text-transform: none; }
+</style>

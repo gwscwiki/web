@@ -1,0 +1,17 @@
+name:
+  fr: Rôdeur — Tonnerre (+15 contre la foudre)
+  en: Ranger — Stormbound (+15 vs lightning)
+pieces:
+  head:
+    insignia: insignias/stormbound-insignia
+  chest:
+    insignia: insignias/stormbound-insignia
+  hands:
+    insignia: insignias/stormbound-insignia
+  legs:
+    insignia: insignias/stormbound-insignia
+  feet:
+    insignia: insignias/stormbound-insignia
+note:
+  fr: La source ne précise pas les runes de cette armure.
+  en: The source gives no runes for this armor.

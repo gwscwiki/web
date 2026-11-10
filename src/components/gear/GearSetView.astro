@@ -1,0 +1,66 @@
+---
+/**
+ * The content of one Gear set. Armor set: a row per slot it covers (insignia, rune, headpiece
+ * attribute), `note` underneath. Weapon set: a <WeaponSetCard>.
+ */
+import { gearSet, setType, slotsOf, tr } from '../../lib/kb';
+import { attributeName } from '../../lib/gw/names';
+import { langFromLocals, t } from '../../lib/ui';
+import { Tag } from '../ui';
+import GearChip from './GearChip.astro';
+import WeaponSetCard from './WeaponSetCard.astro';
+
+interface Props { set: string }
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const s = await gearSet(Astro.props.set);
+const type = setType(s.id);
+const rows = slotsOf(s).map((slot) => ({ slot, ...s.data.pieces![slot]! }));
+const note = tr(s.data.note, lang);
+---
+
+<div class="gw-gearset">
+  {
+    type === 'weapons' ? (
+      <div class="gw-weaponcards"><WeaponSetCard set={s.id} /></div>
+    ) : (
+      <table>
+        <thead>
+          <tr><th scope="col"><span class="gw-visually-hidden">{_('slot')}</span></th><th scope="col">{_('insignias')}</th><th scope="col">{_('runes')}</th></tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <th scope="row">
+                {_(r.slot)}
+                {r.attribute != null && <Tag size="sm" tone="accent">+1 {attributeName(r.attribute, lang)}</Tag>}
+              </th>
+              <td>{r.insignia ? <GearChip gear={r.insignia} /> : <span class="gw-muted">—</span>}</td>
+              <td>{r.rune ? <GearChip gear={r.rune} /> : <span class="gw-muted">—</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+  {type !== 'weapons' && note && <p class="gw-gearset__note">{note.text}{note.untranslated && <em> ({_('notTranslated')})</em>}</p>}
+</div>
+
+<style>
+  .gw-gearset { display: grid; gap: var(--gw-space-2); }
+  .gw-gearset__note { margin: 0; font-size: var(--gw-text-sm); color: var(--gw-text-muted); }
+  table { width: 100%; border-collapse: collapse; font-size: var(--gw-text-sm); }
+  th, td { padding: var(--gw-space-1) var(--gw-space-2); text-align: start; vertical-align: middle; border-bottom: 1px solid var(--gw-divider); }
+  tbody tr:last-child > * { border-bottom: 0; }
+  thead th {
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: var(--gw-text-3xs);
+    letter-spacing: var(--gw-tracking-wider);
+    text-transform: uppercase;
+    color: var(--gw-text-subtle);
+  }
+  tbody th { font-weight: var(--gw-weight-bold); color: var(--gw-text-strong); white-space: nowrap; }
+  tbody th :global(.gw-tag) { margin-inline-start: var(--gw-space-2); }
+  @media (max-width: 40rem) { tbody th { white-space: normal; } }
+</style>

@@ -1,0 +1,10 @@
+gwwTitle: Candy Apple
+requirements:
+  - level: optional
+    target:
+      type: role
+      role: fow/roles/vos
+  - level: optional
+    target:
+      type: role
+      role: fow/roles/solo-vos

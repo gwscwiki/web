@@ -1,0 +1,65 @@
+---
+/**
+ * Button — flat teal call-to-action, an outlined secondary, or a quiet ghost. A link when `href` is set.
+ * Extra attributes (data-*, aria-*, type) pass through.
+ *
+ *   <Button href="/builds/" variant="primary" arrow>Voir les builds</Button>
+ *   <Button variant="ghost" size="sm" data-copy={code}>Copier</Button>
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = Omit<HTMLAttributes<'button'> & HTMLAttributes<'a'>, 'class'> & {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'sm' | 'md' | 'lg';
+  /** Trailing chevron, as on full-width path buttons. */
+  arrow?: boolean;
+  block?: boolean;
+  class?: string;
+};
+const { href, variant = 'primary', size = 'md', arrow = false, block = false, class: cls, ...rest } = Astro.props;
+const El = href ? 'a' : 'button';
+---
+
+<El
+  class:list={['gw-btn', `gw-btn--${variant}`, `gw-btn--${size}`, block && 'gw-btn--block', cls]}
+  href={href}
+  type={href ? undefined : (rest.type ?? 'button')}
+  {...rest}
+>
+  <span><slot /></span>
+  {arrow && <svg class="gw-btn__arrow" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" /></svg>}
+</El>
+
+<style>
+  .gw-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gw-space-3);
+    border: 1px solid transparent;
+    border-radius: var(--gw-radius-md);
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    letter-spacing: var(--gw-tracking-wide);
+    text-transform: uppercase;
+    text-decoration: none;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color var(--gw-duration-fast) var(--gw-ease), border-color var(--gw-duration-fast) var(--gw-ease), color var(--gw-duration-fast) var(--gw-ease);
+  }
+  .gw-btn--sm { padding: 0.5rem 0.75rem; font-size: var(--gw-text-3xs); }
+  .gw-btn--md { padding: 0.8rem 1.1rem; font-size: var(--gw-text-2xs); }
+  .gw-btn--lg { padding: 1.1rem 1.25rem; font-size: var(--gw-text-sm); }
+  .gw-btn--block { display: flex; width: 100%; }
+
+  .gw-btn--primary { background: var(--gw-accent-fill); border-color: var(--gw-accent-fill); color: var(--gw-on-accent); }
+  .gw-btn--secondary { background: transparent; border-color: var(--gw-border-accent); color: var(--gw-accent-text); }
+  .gw-btn--ghost { background: var(--gw-surface-2); border-color: var(--gw-border-strong); color: var(--gw-text); }
+
+  .gw-btn--primary:hover { background: var(--gw-accent-fill-hover); border-color: var(--gw-accent-fill-hover); }
+  .gw-btn--secondary:hover { background: var(--gw-accent-soft); }
+  .gw-btn--ghost:hover { border-color: var(--gw-border-accent); color: var(--gw-text-strong); }
+  .gw-btn:active { transform: translateY(1px); }
+  .gw-btn__arrow { width: 0.9em; height: 0.9em; flex: none; }
+</style>

@@ -1,0 +1,17 @@
+name:
+  fr: Assassin — Avant-garde (+10 contre le contondant)
+  en: Assassin — Vanguard’s (+10 vs blunt)
+pieces:
+  head:
+    insignia: insignias/vanguards-insignia
+  chest:
+    insignia: insignias/vanguards-insignia
+  hands:
+    insignia: insignias/vanguards-insignia
+  legs:
+    insignia: insignias/vanguards-insignia
+  feet:
+    insignia: insignias/vanguards-insignia
+note:
+  fr: La source ne précise pas les runes de cette armure.
+  en: The source gives no runes for this armor.

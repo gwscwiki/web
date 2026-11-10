@@ -1,0 +1,6 @@
+gwwTitle: Powerstone of Courage
+requirements:
+  - level: recommended
+    target:
+      type: strategy
+      strategy: fow/strategies/rollway

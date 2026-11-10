@@ -1,0 +1,48 @@
+---
+/**
+ * One Gear item as an inline chip: icon + in-game name, linking to its Guild Wars Wiki page.
+ * Mod effects (game data) show as the native tooltip. Gear has no page of its own (ADR 0003).
+ */
+import { gearAffixes, gearItem, gearName, gearWiki } from '../../lib/kb';
+import { iconForGear } from '../../lib/gw/icons';
+import { langFromLocals } from '../../lib/ui';
+import { GameIcon } from '../ui';
+
+interface Props { gear: string | { id: string }; variant?: 'pill' | 'plain' }
+const lang = langFromLocals(Astro.locals);
+const g = await gearItem(Astro.props.gear);
+const name = await gearName(g, lang);
+const href = await gearWiki(g);
+const tip = (await gearAffixes(g, lang)).join('\n');
+const El = href ? 'a' : 'span';
+---
+
+<El
+  class:list={['gw-gearchip', `gw-gearchip--${Astro.props.variant ?? 'plain'}`, 'not-content']}
+  href={href}
+  target={href ? '_blank' : undefined}
+  rel={href ? 'noopener' : undefined}
+  title={tip || undefined}
+><GameIcon src={iconForGear(g)} label={name} size="xs" decorative /><span>{name}</span></El>
+
+<style>
+  .gw-gearchip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gw-space-2);
+    color: var(--gw-text);
+    font-size: var(--gw-text-sm);
+    text-decoration: none;
+    vertical-align: middle;
+  }
+  a.gw-gearchip:hover span { color: var(--gw-accent-strong); text-decoration: underline; }
+  .gw-gearchip--pill {
+    padding: 0.15rem 0.6rem 0.15rem 0.2rem;
+    border: 1px solid var(--gw-border-accent);
+    border-radius: var(--gw-radius-pill);
+    background: var(--gw-accent-soft);
+    color: var(--gw-text-strong);
+    font-weight: var(--gw-weight-semibold);
+  }
+  .gw-gearchip--pill :global(.gw-icon) { border-radius: var(--gw-radius-pill); }
+</style>

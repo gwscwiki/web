@@ -1,0 +1,45 @@
+---
+/**
+ * Stat — one game cost/timing with its glyph (energy, adrenaline, activation, recharge…).
+ * Glyphs are our own simple SVGs, not game art. `label` is the accessible name.
+ *
+ *   <Stat kind="energy" value={5} label="Énergie" />
+ */
+interface Props {
+  kind: 'energy' | 'adrenaline' | 'activation' | 'recharge' | 'upkeep' | 'sacrifice';
+  value: string | number;
+  label: string;
+}
+const { kind, value, label } = Astro.props;
+const glyphs: Record<Props['kind'], string> = {
+  energy: '<circle cx="8" cy="8" r="6"/>',
+  adrenaline: '<path d="M8 1.5 14.5 8 8 14.5 1.5 8z"/>',
+  activation: '<path d="M4 2h8M4 14h8M5 2c0 4 6 4 6 6s-6 2-6 6M11 2c0 4-6 4-6 6s6 2 6 6" fill="none" stroke-width="1.5"/>',
+  recharge: '<circle cx="8" cy="8" r="6" fill="none" stroke-width="1.5"/><path d="M8 4v4l3 2" fill="none" stroke-width="1.5"/>',
+  upkeep: '<path d="M8 2v12M3 7l5-5 5 5" fill="none" stroke-width="1.8"/>',
+  sacrifice: '<path d="M8 14S2 10 2 5.5A3 3 0 0 1 8 4a3 3 0 0 1 6 1.5C14 10 8 14 8 14z"/>',
+};
+---
+
+<span class:list={['gw-stat', `gw-stat--${kind}`]} title={label}>
+  <svg viewBox="0 0 16 16" aria-hidden="true" set:html={glyphs[kind]} />
+  <span class="gw-visually-hidden">{label}</span>
+  <span>{value}</span>
+</span>
+
+<style>
+  .gw-stat {
+    --_c: var(--gw-text-muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3em;
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--gw-weight-semibold);
+    color: var(--gw-text);
+  }
+  .gw-stat svg { width: 0.95em; height: 0.95em; fill: var(--_c); stroke: var(--_c); }
+  .gw-stat--energy { --_c: var(--gw-energy); }
+  .gw-stat--adrenaline { --_c: var(--gw-adrenaline); }
+  .gw-stat--sacrifice { --_c: var(--gw-health); }
+  .gw-stat--upkeep { --_c: var(--gw-energy); }
+</style>

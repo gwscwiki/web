@@ -1,0 +1,8 @@
+---
+/** Gear block: references a Gear catalog entry (src/content/gear), e.g. `runes/rune-of-superior-vigor`. Links to the Guild Wars Wiki. */
+import GearChip from '../gear/GearChip.astro';
+
+interface Props { gear: string }
+---
+
+<GearChip gear={Astro.props.gear} variant="pill" />

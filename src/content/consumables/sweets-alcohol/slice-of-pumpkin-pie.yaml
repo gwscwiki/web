@@ -1,0 +1,16 @@
+gwwTitle: Slice of Pumpkin Pie
+requirements:
+  - level: recommended
+    target:
+      type: role
+      role: fow/roles/vos
+    reason:
+      fr: Vitesse d’attaque.
+      en: Attack speed.
+  - level: recommended
+    target:
+      type: role
+      role: fow/roles/solo-vos
+    reason:
+      fr: Vitesse d’attaque.
+      en: Attack speed.

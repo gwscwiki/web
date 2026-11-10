@@ -1,0 +1,22 @@
+name:
+  fr: VoS — Oubli (passage arrière de la forge)
+  en: VoS — Forsaken (forge backway)
+pieces:
+  head:
+    insignia: insignias/forsaken-insignia
+    rune: runes/rune-of-vitae
+  chest:
+    insignia: insignias/forsaken-insignia
+    rune: runes/rune-of-superior-vigor
+  hands:
+    insignia: insignias/forsaken-insignia
+    rune: runes/rune-of-vitae
+  legs:
+    insignia: insignias/forsaken-insignia
+    rune: runes/rune-of-vitae
+  feet:
+    insignia: insignias/forsaken-insignia
+    rune: runes/rune-of-vitae
+note:
+  fr: "Armure à haute santé : 5 insignes de l’oubli, Vigueur supérieure et 4 Vitae."
+  en: "High-HP armor: 5 Forsaken insignias, superior Vigor and 4 Vitae."

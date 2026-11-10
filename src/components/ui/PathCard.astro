@@ -1,0 +1,92 @@
+---
+/**
+ * PathCard — large entry card (root-path `href`s get base and locale like prose links): tag pill, display title, kicker subtitle, text/list slot, CTA button.
+ * Use a few side by side with the `.gw-paths` grid (base.css). `tone` switches teal ↔ blue.
+ *
+ *   <PathCard tag="Zone" title="FoW" kicker="Fissure of Woe" href="/fow/" cta="Ouvrir"><p>…</p></PathCard>
+ */
+import { urlOf } from '../../lib/kb';
+import { langFromLocals } from '../../lib/ui';
+import Button from './Button.astro';
+import Tag from './Tag.astro';
+
+interface Props {
+  title: string;
+  href: string;
+  cta: string;
+  tag?: string;
+  kicker?: string;
+  tone?: 'accent' | 'info';
+}
+const { title, href, cta, tag, kicker, tone = 'accent' } = Astro.props;
+// Prop links don't go through the rehype link plugin, so add base + locale to root paths here.
+const link = href.startsWith('/') ? urlOf(href.replace(/^\/|\/$/g, '') || 'index', langFromLocals(Astro.locals)) : href;
+---
+
+<article class:list={['gw-path', 'gw-frame', tone === 'accent' && 'gw-frame--accent', `gw-path--${tone}`, 'not-content']}>
+  {tag && <Tag tone={tone} size="sm">{tag}</Tag>}
+  <h2 class="gw-path__title">{title}</h2>
+  {kicker && <p class="gw-path__kicker">{kicker}</p>}
+  <div class="gw-path__body"><slot /></div>
+  <Button href={link} variant={tone === 'info' ? 'secondary' : 'primary'} size="lg" block arrow>{cta}</Button>
+</article>
+
+<style>
+  .gw-path {
+    --_kicker: var(--gw-accent);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--gw-space-3);
+    padding: var(--gw-space-5);
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-lg);
+    background: var(--gw-surface-1);
+    box-shadow: var(--gw-shadow-card);
+    transition: border-color var(--gw-duration-base) var(--gw-ease);
+  }
+  .gw-path:hover { border-color: var(--gw-border-accent); }
+  .gw-path--info { --_kicker: var(--gw-tone-info-fg); }
+  .gw-path--info:hover { border-color: var(--gw-tone-info-border); }
+
+  .gw-path__title {
+    margin: 0;
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: clamp(var(--gw-text-2xl), 4vw, var(--gw-text-4xl));
+    line-height: 1.1;
+    letter-spacing: var(--gw-tracking-wide);
+    color: var(--gw-text-strong);
+  }
+  .gw-path__kicker {
+    margin: 0;
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: var(--gw-text-2xs);
+    letter-spacing: var(--gw-tracking-widest);
+    text-transform: uppercase;
+    color: var(--_kicker);
+  }
+  .gw-path__body { flex: 1; width: 100%; color: var(--gw-text); }
+  .gw-path__body :global(p) { margin: 0 0 var(--gw-space-3); }
+  .gw-path__body :global(a) { color: var(--gw-accent-text); }
+  .gw-path__body :global(ul) { list-style: none; margin: 0; padding: 0; }
+  .gw-path__body :global(li) {
+    position: relative;
+    margin: 0;
+    padding: var(--gw-space-2) 0 var(--gw-space-2) 1.5rem;
+    border-bottom: 1px solid var(--gw-divider);
+    font-weight: var(--gw-weight-semibold);
+    color: var(--gw-text-strong);
+  }
+  .gw-path__body :global(li)::before {
+    content: '';
+    position: absolute;
+    left: 0.25rem;
+    top: calc(var(--gw-space-2) + 0.5em);
+    width: 0.45rem;
+    height: 0.45rem;
+    background: var(--_kicker);
+    transform: rotate(45deg);
+  }
+</style>

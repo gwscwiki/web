@@ -1,0 +1,5 @@
+name:
+  fr: Bâton de lanceur
+  en: Caster staff
+weapons:
+  - weapons/caster-staff-hct

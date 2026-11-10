@@ -1,0 +1,16 @@
+gwwTitle: Candy Corn
+requirements:
+  - level: recommended
+    target:
+      type: role
+      role: fow/roles/vos
+    reason:
+      fr: +1 à tous les attributs.
+      en: +1 to all attributes.
+  - level: recommended
+    target:
+      type: role
+      role: fow/roles/solo-vos
+    reason:
+      fr: +1 à tous les attributs.
+      en: +1 to all attributes.

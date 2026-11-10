@@ -1,0 +1,64 @@
+---
+/**
+ * List — bulleted list with accent markers and hairline separators. Put <li> in the slot.
+ * `ordered` numbers the items (run order).
+ *
+ *   <List><li>…</li></List>
+ */
+interface Props {
+  ordered?: boolean;
+  tone?: 'accent' | 'info';
+  class?: string;
+}
+const { ordered = false, tone = 'accent', class: cls } = Astro.props;
+const El = ordered ? 'ol' : 'ul';
+---
+
+<El class:list={['gw-list', ordered && 'gw-list--ordered', `gw-list--${tone}`, cls]}><slot /></El>
+
+<style>
+  .gw-list {
+    --_marker: var(--gw-accent);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: gw-list;
+  }
+  .gw-list--info { --_marker: var(--gw-tone-info-fg); }
+  .gw-list > :global(li) {
+    position: relative;
+    margin: 0;
+    padding: var(--gw-space-2) 0 var(--gw-space-2) 1.6rem;
+    border-bottom: 1px solid var(--gw-divider);
+  }
+  .gw-list > :global(li:last-child) { border-bottom: 0; }
+  .gw-list > :global(li)::before {
+    content: '';
+    position: absolute;
+    left: 0.3rem;
+    top: calc(var(--gw-space-2) + 0.55em);
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--_marker);
+    transform: rotate(45deg);
+  }
+  .gw-list--ordered > :global(li) { counter-increment: gw-list; padding-left: 2rem; }
+  .gw-list--ordered > :global(li)::before {
+    content: counter(gw-list);
+    left: 0;
+    top: calc(var(--gw-space-2) + 0.1em);
+    width: 1.4rem;
+    height: 1.4rem;
+    display: grid;
+    place-items: center;
+    transform: none;
+    border-radius: var(--gw-radius-pill);
+    background: var(--gw-accent-soft);
+    border: 1px solid var(--gw-border-accent);
+    box-shadow: none;
+    color: var(--gw-accent-strong);
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: var(--gw-text-3xs);
+  }
+</style>

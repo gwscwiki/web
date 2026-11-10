@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.astro/
+.env
+.DS_Store
+.claude/
+.astro-dev.log
+public/admin/sveltia-cms.js
+src/assets/icons/synced/
+.scratch/shots/

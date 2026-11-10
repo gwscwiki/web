@@ -1,0 +1,151 @@
+---
+/** Bar block from a raw template code: display only, not a Build (Storage mapping). */
+import { getEntry } from 'astro:content';
+import { decodeBar } from '../../lib/gw/templates';
+import { attributeName, PROFESSIONS, professionName } from '../../lib/gw/names';
+import { renderDescription } from '../../lib/gw/describe';
+import { iconFor } from '../../lib/gw/icons';
+import { langFromLocals, t } from '../../lib/ui';
+import { Button, GameIcon, Stat, Tag, Tooltip } from '../ui';
+
+interface Props {
+  code: string;
+  /** slot index → mark, used by BuildBar to highlight swaps */
+  marks?: Record<number, 'swap' | 'filled'>;
+}
+const { code, marks = {} } = Astro.props;
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const bar = decodeBar(code);
+
+const slots = await Promise.all(
+  bar.skills.map(async (id, i) => {
+    const s = id ? (await getEntry('skills', String(id)))?.data : undefined;
+    if (id && !s) throw new Error(`SkillBar: skill ${id} missing from the skills collection (code ${code})`);
+    return { i, id, s, icon: iconFor('skill', id), mark: marks[i] };
+  }),
+);
+const ring = { swap: 'accent', filled: 'success' } as const;
+const usedMarks = [...new Set(Object.values(marks))];
+const sec = bar.secondary ? PROFESSIONS[bar.secondary].abbr : '–';
+---
+
+<figure class="gw-bar not-content">
+  <figcaption class="gw-bar__head">
+    <Tag tone="accent" title={`${professionName(bar.primary, lang)} / ${professionName(bar.secondary, lang)}`}>
+      {PROFESSIONS[bar.primary].abbr}/{sec}
+    </Tag>
+    {Object.entries(bar.attributes).map(([a, r]) => (
+      <span class="gw-bar__attr">{attributeName(Number(a), lang)} <strong>{r}</strong></span>
+    ))}
+  </figcaption>
+
+  <ol class="gw-bar__slots">
+    {
+      slots.map(({ id, s, icon, mark }) => (
+        <li class="gw-bar__slot">
+          {s ? (
+            <Tooltip>
+              <span class="gw-bar__skill">
+                <GameIcon src={icon} label={s.name[lang]} size="lg" elite={s.elite} ring={mark && ring[mark]} decorative />
+              </span>
+              <Fragment slot="tip">
+                <strong class="gw-bar__tip-name">{s.name[lang]}</strong>
+                {lang === 'fr' && <span class="gw-bar__tip-en">{s.name.en}</span>}
+                <span class="gw-bar__stats">
+                  {s.energy > 0 && <Stat kind="energy" value={s.energy} label={_('energy')} />}
+                  {s.adrenaline > 0 && <Stat kind="adrenaline" value={s.adrenaline} label={_('adrenaline')} />}
+                  {s.sacrifice > 0 && <Stat kind="sacrifice" value={`${s.sacrifice}%`} label={_('sacrifice')} />}
+                  <Stat kind="activation" value={s.activation} label={_('activation')} />
+                  {s.recharge > 0 && <Stat kind="recharge" value={s.recharge} label={_('recharge')} />}
+                </span>
+                <span class="gw-bar__desc" set:html={renderDescription(s.description[lang])} />
+              </Fragment>
+            </Tooltip>
+          ) : (
+            <span class="gw-bar__skill">
+              <GameIcon label="" size="lg" empty />
+              <span class="gw-bar__name gw-muted">{_('openSlot')}</span>
+            </span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="gw-bar__foot">
+    <code class="gw-bar__code">{code}</code>
+    <Button variant="ghost" size="sm" data-copy={code} data-copied={_('copied')}>{_('copy')}</Button>
+    {usedMarks.length > 0 && (
+      <span class="gw-bar__legend">
+        {usedMarks.map((m) => <Tag tone={ring[m]} size="sm">{_(m === 'swap' ? 'markSwap' : 'markFilled')}</Tag>)}
+      </span>
+    )}
+  </div>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('.gw-bar [data-copy]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(b.dataset.copy!);
+      const label = b.firstElementChild as HTMLElement;
+      const before = label.textContent;
+      label.textContent = b.dataset.copied ?? before;
+      setTimeout(() => (label.textContent = before), 1500);
+    }),
+  );
+</script>
+
+<style>
+  .gw-bar {
+    margin-block: var(--gw-space-5);
+    padding: var(--gw-space-4);
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-lg);
+    background: var(--gw-surface-1);
+    box-shadow: var(--gw-shadow-card);
+  }
+  .gw-bar__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gw-space-2) var(--gw-space-4); font-size: var(--gw-text-sm); }
+  .gw-bar__attr { color: var(--gw-text-muted); }
+  .gw-bar__attr strong { color: var(--gw-text-strong); font-variant-numeric: tabular-nums; }
+
+  .gw-bar__slots {
+    list-style: none;
+    margin: var(--gw-space-4) 0;
+    padding: var(--gw-space-3);
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: var(--gw-space-2);
+    border-radius: var(--gw-radius-md);
+    background: var(--gw-surface-inset);
+    border: 1px solid var(--gw-divider);
+  }
+  .gw-bar__slot { margin: 0; display: flex; justify-content: center; }
+  .gw-bar__slot :global(.gw-tt) { border-radius: var(--gw-radius-sm); }
+  .gw-bar__skill { display: flex; flex-direction: column; align-items: center; gap: var(--gw-space-2); text-align: center; }
+  .gw-bar__name { font-size: var(--gw-text-2xs); line-height: 1.25; color: var(--gw-text); overflow-wrap: break-word; hyphens: auto; }
+
+  .gw-bar__tip-name { display: block; font-family: var(--gw-font-display); font-size: var(--gw-text-sm); color: var(--gw-tooltip-fg); }
+  .gw-bar__tip-en { display: block; color: var(--gw-tooltip-muted); font-size: var(--gw-text-2xs); }
+  .gw-bar__stats { display: flex; flex-wrap: wrap; gap: var(--gw-space-3); margin-block: var(--gw-space-2); color: var(--gw-tooltip-fg); }
+  .gw-bar__stats :global(.gw-stat) { color: var(--gw-tooltip-fg); }
+  .gw-bar__desc { display: block; }
+  .gw-bar__desc :global(.gw-gray) { color: var(--gw-tooltip-muted); }
+
+  .gw-bar__foot { display: flex; flex-wrap: wrap; gap: var(--gw-space-2); align-items: center; }
+  .gw-bar__code {
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--gw-radius-sm);
+    background: var(--gw-surface-inset);
+    border: 1px solid var(--gw-divider);
+    font-family: var(--gw-font-mono);
+    font-size: var(--gw-text-2xs);
+    color: var(--gw-text-muted);
+    overflow-wrap: anywhere;
+  }
+  .gw-bar__legend { display: flex; gap: var(--gw-space-2); margin-inline-start: auto; }
+
+  @media (max-width: 40rem) {
+    .gw-bar__slots { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+</style>

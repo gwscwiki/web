@@ -1,0 +1,72 @@
+---
+kind: strategy
+title: Roll-way à 6
+description: Roll-way à 6 joueurs, environ 9 minutes.
+label: 6-man roll-way
+time: ~9 min
+roles:
+  - role: fow/roles/t1
+    build: builds/sf-ranger/soh-dark-prison
+    duties:
+      - fow/duties/hunt
+      - fow/duties/tos
+      - fow/duties/bf
+      - fow/duties/tos-lord
+    route: hunt, tos, bf, tos lord
+  - role: fow/roles/t3
+    build: builds/sf-ranger/iau-recall
+    duties:
+      - fow/duties/hold
+      - fow/duties/forest
+      - fow/duties/griffs
+    route: hold, forest, griffs
+  - role: fow/roles/mt
+    build: builds/sf-ranger/dash-finish-him
+    duties:
+      - fow/duties/quicky
+      - fow/duties/open-forge
+      - fow/duties/90s
+      - fow/duties/south
+      - fow/duties/cave
+      - fow/duties/khobay
+    route: quicky, open forge spike, 90s, south, cave, khobay
+    note:
+      fr: Appelé « MT4 » sur la source, en R/A. Cupcake après la forge ; Unseen Fury juste avant les spikes du V1 (renversements d’Earthshaker).
+      en: Called "MT4" in the source, as an R/A. Cupcake after the forge; Unseen Fury right before the V1 spikes (Earthshaker knockdowns).
+  - role: fow/roles/v1
+    build: builds/vos/da
+    duties:
+      - fow/duties/quicky
+      - fow/duties/open-forge
+      - fow/duties/90s
+      - fow/duties/south
+      - fow/duties/quests
+      - fow/duties/toc-wolf
+    route: quicky, open forge spike, 90s, south, quests, toc wolf/shadows
+  - role: fow/roles/v2
+    build: builds/vos/da
+    duties:
+      - fow/duties/quicky
+      - fow/duties/open-forge
+      - fow/duties/top
+      - fow/duties/north
+      - fow/duties/menzies
+    route: quicky, open forge spike, top, north, menzie
+  - role: fow/roles/v3
+    build: builds/vos/da
+    duties:
+      - fow/duties/toc
+      - fow/duties/camp
+      - fow/duties/bridge
+      - fow/duties/griffs
+    route: toc, camp, bridge, griffs
+sources:
+  - title: 6-man roll-way FoW
+    url: https://wiki.gwscr.com/wiki/6-man_roll-way_FoW
+    edited: 2026-09-18
+    site: Speedclear Wiki
+---
+
+Variante à 6 joueurs de la roll-way (temps visé : ~9 min). La source donne pour chaque rôle sa route et sa barre ; l’équipement est celui de la [roll-way](/fow/strategies/rollway/).
+
+Pour le MT4, les icônes de la source montrent Unseen Fury mais son code donne « Finish Him! » ; le build rattaché suit le code.
