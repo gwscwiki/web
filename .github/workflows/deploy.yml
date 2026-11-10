@@ -28,7 +28,7 @@ jobs:
       # Game data is fetched at build time, never committed. Cache the downloads (keyed by the pinned
       # build-wars commit in src/lib/gw/source.mjs) and Astro's data store, so an upstream outage only
       # breaks a deploy when the pin changes.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: |
             node_modules/.cache/gw-data
@@ -36,7 +36,7 @@ jobs:
           key: gw-data-${{ hashFiles('src/lib/gw/source.mjs') }}
       # Icons fetched from the Guild Wars Wiki for the pages in use (scripts/sync-icons.mjs). Keep the
       # cache across runs so only new icons are downloaded; restore the newest one available.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: node_modules/.cache/gw-icons
           key: gw-icons-${{ github.sha }}
