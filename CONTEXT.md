@@ -20,12 +20,16 @@ A concrete skill bar plus attributes and Loadout, run by one or more Roles (in a
 _Avoid_: bar, template (a template is the build's import code)
 
 **Role**:
-A slot in a Zone's team composition, e.g. FoW's T1, MT, v1, UA. A Role keeps its identity across Strategies; what changes between Strategies is which Build it runs and which Duties it carries.
+A slot in one Strategy's team, named as the source names it (T1, MT, V1, UA…). A Role only exists within its Strategy: the V1 of roll-way and the V1 of 4-man roll-way are different jobs that happen to share a name. Roles have no pages; a Strategy page lists its Roles with their recommended Build and Duties.
 _Avoid_: position, slot
 
 **Duty**:
-One concrete task performed during a run (ToC, camp, griffs, 360, top…), used as a reusable label on Strategies and Gear needs. Each Duty belongs to exactly one Zone and has a place in that Zone's run order. The same Duty can belong to different Roles depending on the Strategy. Its label is the community's English shorthand, used as-is in both languages.
+One concrete task performed during a run (ToC, camp, griffs, 360, top…), used as a reusable label on Strategies and Gear needs. Each Duty belongs to exactly one Zone, sits in one of its Regions, and has a place in that Zone's run order. The same Duty can belong to different Roles depending on the Strategy. Its label is the community's English shorthand, used as-is in both languages.
 _Avoid_: job, task
+
+**Region**:
+A part of a Zone's map that Duties are grouped by (FoW: Tower of Courage, the forge, Forest of the Wailing Lord…), plus a catch-all for Duties tied to no one place (spike, backway). Named after the in-game area, in English. A Zone may carry a map, credited to its author, that shows them.
+_Avoid_: zone (that is the whole elite area)
 
 **Strategy**:
 A way to clear a Zone with a given team (T2Way, roll-way, 4-man TUF-way…). Lists which Roles take part, the Build each one runs and the Duties each one carries, in route order. Has a page, and credits its source when it documents someone else's work. Each Zone has one default Strategy.
@@ -55,15 +59,14 @@ A single-use item used during a run. Kinds: cons (Essence, Grail, Armor), summon
 _Avoid_: cons (one kind of Consumable), pcons
 
 **Requirement**:
-A rule saying how necessary a Consumable is in a given context: level required, recommended, or optional, attached to a Zone, a Strategy, a Role, or a Duty, optionally with a short reason. Consumables are catalog data with no page; they link to the Guild Wars Wiki.
+A rule saying how necessary a Consumable is in a given context: level required, recommended, or optional, attached to a Zone, a Strategy, a Role (of one Strategy), or a Duty, optionally with a short reason. Consumables are catalog data with no page; they link to the Guild Wars Wiki.
 _Avoid_: prerequisite, must-have
 
 ## Relationships
 
-- A **Zone** has one or more **Roles**, an ordered list of **Duties**, and one or more **Strategies**, one of which is the default
-- A **Strategy** gives each **Role** taking part one **Build** (unless the source publishes none) and its **Duties**
-- Which **Build** a **Role** runs and which **Duties** it carries depend on the **Strategy**; several **Roles** may run the same **Build**
-- A **Duty** may appear under different **Roles** across **Strategies**
+- A **Zone** has **Regions**, an ordered list of **Duties** (each in one **Region**), and one or more **Strategies**, one of which is the default
+- A **Strategy** has its own **Roles** and gives each one a **Build** (unless the source publishes none) and its **Duties**; several **Roles** may run the same **Build**
+- A **Duty** is carried by different **Roles** across **Strategies**
 - A **Build** derives from exactly one **Build core** and swaps some of its slots
 - A **Build core** and each **Build** have a **Loadout** (base armor set + weapon sets) and **Gear needs** (Gear sets by Duty and level)
 - A **Gear set** is made of **Gear**; a **Consumable** carries zero or more **Requirements**, each targeting one **Zone**, **Strategy**, **Role**, or **Duty**

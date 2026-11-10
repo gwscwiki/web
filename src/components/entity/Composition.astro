@@ -1,55 +1,94 @@
 ---
-/** A Strategy's team: one row per Role with its Build and Duties; `showRoute` adds the source's own wording. */
+/**
+ * A Strategy's team: one row per Role with its Build and Duties; `showRoute` adds the source's own wording.
+ * With `strategy`, each row expands onto that Role's kit (build bar, loadout, gear sets, consumables).
+ * Rows may instead carry their own `strategy` (a Duty page lists Roles across Strategies): a leading
+ * Strategy column appears and each row expands onto the kit for its own Strategy. `current` (a Duty
+ * link's href) highlights that Duty in the Duties column.
+ */
 import { langFromLocals, t } from '../../lib/ui';
 import { Tag } from '../ui';
+import Kit from './Kit.astro';
 
 interface Link { href: string; text: string }
-interface Row { role: Link; build?: Link & { profs: string }; duties: Link[]; route?: string }
-interface Props { rows: Row[]; showRoute?: boolean }
-const { rows, showRoute = false } = Astro.props;
+interface Row {
+  /** The Role's name in its Strategy (no page). */
+  role: string;
+  build?: Link & { profs: string };
+  duties: Link[];
+  route?: string;
+  strategy?: Link & { id: string; isDefault?: boolean };
+}
+interface Props { rows: Row[]; showRoute?: boolean; strategy?: string; current?: string }
+const { rows, showRoute = false, strategy, current } = Astro.props;
 const _ = t(langFromLocals(Astro.locals));
+const byStrategy = rows.some((r) => r.strategy);
+const expandable = Boolean(strategy) || byStrategy;
+const Wrap = expandable ? 'details' : 'div';
+const Head = expandable ? 'summary' : 'div';
 ---
 
-<div class="gw-comp">
-  <table>
-    <thead>
-      <tr>
-        <th scope="col">{_('role')}</th>
-        <th scope="col">{_('build')}</th>
-        <th scope="col">{_('duties')}</th>
-      </tr>
-    </thead>
-    <tbody>
-      {
-        rows.map((r) => (
-          <tr>
-            <th scope="row"><a href={r.role.href}>{r.role.text}</a></th>
-            <td>
-              {r.build ? (
-                <span class="gw-comp__build"><a href={r.build.href}>{r.build.text}</a><Tag size="sm" tone="accent">{r.build.profs}</Tag></span>
-              ) : (
-                <span class="gw-muted">—</span>
-              )}
-            </td>
-            <td>
-              <span class="gw-comp__duties">
-                {r.duties.length ? r.duties.map((d) => <Tag href={d.href} tone="info" size="sm">{d.text}</Tag>) : <span class="gw-muted">{_('none')}</span>}
-              </span>
-              {showRoute && r.route && <span class="gw-comp__route"><q>{r.route}</q></span>}
-            </td>
-          </tr>
-        ))
-      }
-    </tbody>
-  </table>
+<div class:list={['gw-comp', { 'gw-comp--expandable': expandable, 'gw-comp--by-strategy': byStrategy }]} role="table">
+  <div class="gw-comp__row gw-comp__head" role="row">
+    <span class="gw-comp__chev" aria-hidden="true"></span>
+    {byStrategy && <span role="columnheader">{_('strategy')}</span>}
+    <span role="columnheader">{_('role')}</span>
+    <span role="columnheader">{_('build')}</span>
+    <span role="columnheader">{_('duties')}</span>
+  </div>
+  {
+    rows.map((r, i) => (
+      <Wrap class:list={['gw-comp__item', { 'gw-comp__item--cont': byStrategy && r.strategy?.id === rows[i - 1]?.strategy?.id }]}>
+        <Head class="gw-comp__row" role="row">
+          <span class="gw-comp__chev" aria-hidden="true" />
+          {byStrategy && (
+            <span class="gw-comp__strategy" role="cell">
+              {r.strategy && r.strategy.id !== rows[i - 1]?.strategy?.id && <><a href={r.strategy.href}>{r.strategy.text}</a>{r.strategy.isDefault && <Tag size="sm" tone="accent">{_('default')}</Tag>}</>}
+            </span>
+          )}
+          <strong class="gw-comp__role" role="rowheader">{r.role}</strong>
+          <span class="gw-comp__build" role="cell">
+            {r.build ? (
+              <><a href={r.build.href}>{r.build.text}</a><Tag size="sm" tone="accent">{r.build.profs}</Tag></>
+            ) : (
+              <span class="gw-muted">—</span>
+            )}
+          </span>
+          <span class="gw-comp__duties-cell" role="cell">
+            <span class="gw-comp__duties">
+              {r.duties.length ? r.duties.map((d) => <Tag href={d.href} tone={d.href === current ? 'accent' : 'info'} size="sm">{d.text}</Tag>) : <span class="gw-muted">{_('none')}</span>}
+            </span>
+            {showRoute && r.route && <span class="gw-comp__route"><q>{r.route}</q></span>}
+          </span>
+        </Head>
+        {expandable && (
+          <div class="gw-comp__kit">
+            <Kit strategy={r.strategy?.id ?? strategy!} role={r.role} />
+          </div>
+        )}
+      </Wrap>
+    ))
+  }
 </div>
 
 <style>
-  .gw-comp { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: var(--gw-text-sm); }
-  th, td { padding: var(--gw-space-2); text-align: start; vertical-align: top; border-bottom: 1px solid var(--gw-divider); }
-  tbody tr:last-child > * { border-bottom: 0; }
-  thead th {
+  .gw-comp { --comp-cols: 4.5rem minmax(0, 2fr) minmax(0, 3fr); font-size: var(--gw-text-sm); }
+  .gw-comp--expandable { --comp-cols: 1rem 4.5rem minmax(0, 2fr) minmax(0, 3fr); }
+  .gw-comp--by-strategy { --comp-cols: 1rem minmax(0, 2fr) 4.5rem minmax(0, 2fr) minmax(0, 3fr); }
+  .gw-comp:not(.gw-comp--expandable) .gw-comp__chev { display: none; }
+
+  .gw-comp__row {
+    display: grid;
+    grid-template-columns: var(--comp-cols);
+    gap: var(--gw-space-2) var(--gw-space-3);
+    align-items: start;
+    padding: var(--gw-space-2);
+  }
+  .gw-comp__item { border-top: 1px solid var(--gw-divider); }
+  /* Next Role of the same Strategy: no rule, so each Strategy reads as one group. */
+  .gw-comp__item--cont { border-top-color: transparent; }
+
+  .gw-comp__head > * {
     font-family: var(--gw-font-display);
     font-weight: var(--gw-weight-bold);
     font-size: var(--gw-text-3xs);
@@ -57,10 +96,46 @@ const _ = t(langFromLocals(Astro.locals));
     text-transform: uppercase;
     color: var(--gw-text-subtle);
   }
-  tbody th { font-weight: var(--gw-weight-bold); white-space: nowrap; }
+
+  .gw-comp__role { white-space: nowrap; }
   a { color: var(--gw-accent-text); text-decoration: none; }
   a:hover { color: var(--gw-accent-strong); text-decoration: underline; }
+  .gw-comp__strategy { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--gw-space-2); font-weight: var(--gw-weight-semibold); }
   .gw-comp__build { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--gw-space-2); }
   .gw-comp__duties { display: flex; flex-wrap: wrap; gap: var(--gw-space-1); }
   .gw-comp__route { display: block; margin-top: var(--gw-space-1); color: var(--gw-text-muted); font-size: var(--gw-text-2xs); }
+
+  /* Expandable rows */
+  summary.gw-comp__row { cursor: pointer; list-style: none; border-radius: var(--gw-radius-sm); transition: background-color var(--gw-duration-fast) var(--gw-ease); }
+  summary.gw-comp__row::-webkit-details-marker { display: none; }
+  summary.gw-comp__row:hover { background: var(--gw-surface-hover); }
+  summary.gw-comp__row:focus-visible { outline: none; box-shadow: var(--gw-focus-ring); }
+  .gw-comp__item .gw-comp__chev::before {
+    content: '';
+    display: block;
+    width: 0.4rem;
+    height: 0.4rem;
+    margin-top: 0.45em;
+    border-right: 1.5px solid var(--gw-text-subtle);
+    border-bottom: 1.5px solid var(--gw-text-subtle);
+    transform: rotate(-45deg);
+    transition: transform var(--gw-duration-fast) var(--gw-ease);
+  }
+  .gw-comp__item[open] .gw-comp__chev::before { transform: rotate(45deg); }
+  .gw-comp__item[open] > summary { background: var(--gw-surface-inset); border-radius: var(--gw-radius-sm) var(--gw-radius-sm) 0 0; }
+  .gw-comp__kit {
+    padding: var(--gw-space-3) var(--gw-space-3) var(--gw-space-4);
+    margin-bottom: var(--gw-space-2);
+    background: var(--gw-surface-inset);
+    border-radius: 0 0 var(--gw-radius-sm) var(--gw-radius-sm);
+  }
+
+  @media (max-width: 40rem) {
+    .gw-comp__head { display: none; }
+    .gw-comp__row { grid-template-columns: 1rem 4.5rem minmax(0, 1fr); }
+    .gw-comp:not(.gw-comp--expandable) .gw-comp__row { grid-template-columns: 4.5rem minmax(0, 1fr); }
+    .gw-comp__strategy { grid-column: 2 / -1; }
+    .gw-comp__strategy:empty { display: none; }
+    .gw-comp__duties-cell { grid-column: -2 / -1; }
+  }
 </style>

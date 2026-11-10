@@ -16,7 +16,7 @@ const cores = await Promise.all(
         roles: await Promise.all(
           (await rolesRunning(b.id)).map(async (x) => ({
             href: urlOf(x.strategy.id, lang),
-            title: `${x.strategy.data.label} · ${await titleOf(x.row.role, lang)}`,
+            title: `${x.strategy.data.label} · ${x.row.role}`,
           })),
         ),
       })),

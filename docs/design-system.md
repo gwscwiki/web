@@ -41,8 +41,8 @@ Not enforced, but expected:
 ```
 src/components/
   ui/        primitives, domain-agnostic — import from '../ui' (index.ts)
-  blocks/    MDX blocks, auto-imported into content (SkillBar, BuildBar, GearCard, DutyBadge, BuildIndex)
-  entity/    generated parts of entity pages (EntityPanel, Composition, Kit, Needs, RequirementLevel)
+  blocks/    MDX blocks, auto-imported into content (SkillBar, BuildBar, GearCard, DutyBadge, BuildIndex, Ref)
+  entity/    generated parts of entity pages (EntityPanel above the prose, EntityFooter below; Composition, Kit, Needs, RequirementLevel)
   gear/      Gear rendering shared by entity pages and blocks (GearChip, GearSetView, WeaponSetCard, LoadoutTable, GearNeeds)
   overrides/ Starlight component overrides (Hero, ThemeProvider, ThemeSelect, Footer, MarkdownContent)
 ```

@@ -2,11 +2,16 @@
 /**
  * Generated part of an entity page rendered *after* the prose (MarkdownContent override).
  * Counterpart of EntityPanel, which renders above it. Reads shared data from the French twin.
- * Duty: who carries it, per Strategy. Any entity: the credit for its sources, last.
+ * Duty: the Role carrying it in each Strategy, each row expanding onto its build and kit; the Gear
+ * sets and Consumables bound to it; its Region, linking back to the Zone's map. Any entity: the credit
+ * for its sources, last.
  */
 import { List, Panel } from '../ui';
-import DutyMatrix, { type Cell } from './DutyMatrix.astro';
-import { getShared, refId, rolesByDuty, titleOf, urlOf, zoneOf, type Entity } from '../../lib/kb';
+import Composition from './Composition.astro';
+import Needs from './Needs.astro';
+import GearNeeds from '../gear/GearNeeds.astro';
+import { gearNeedsForDuty, getShared, needsFor, rolesByDuty, titleOf, tr, urlOf, zoneOf, type Entity } from '../../lib/kb';
+import { compRow } from '../../lib/composition';
 import { langFromLocals, t } from '../../lib/ui';
 
 const lang = langFromLocals(Astro.locals);
@@ -26,23 +31,14 @@ if (kind === 'duty') {
   const d = shared as unknown as Entity<'duty'>;
   const zone = await zoneOf(d.id);
   p.zone = zone && (await L(zone.id));
-  // Role × Strategy grid: every Strategy of the Zone as a column, every Role carrying this Duty
-  // somewhere as a row (in the Zone's role order).
+  const region = zone?.data.regions.find((r) => r.id === d.data.region);
+  p.region = region && tr(region.name, lang)!.text;
   const bySetup = await rolesByDuty(d.id);
-  const carriers = new Set(bySetup.flatMap((s) => s.rows.map((r) => refId(r.role))));
-  const order = zone?.data.roles.map(refId) ?? [];
-  const rank = (id: string) => (order.indexOf(id) + 1 || order.length + 1);
-  p.strategies = await Promise.all(
-    bySetup.map(async (s) => ({ href: urlOf(s.strategy.id, lang), text: s.strategy.data.label, isDefault: s.strategy.data.default, carried: s.rows.length > 0 })),
-  );
-  p.rows = await Promise.all(
-    [...carriers].sort((a, b) => rank(a) - rank(b)).map(async (id) => ({
-      role: await L(id),
-      cells: bySetup.map((s): Cell =>
-        s.rows.some((r) => refId(r.role) === id) ? 'carries' : s.strategy.data.roles.some((r) => refId(r.role) === id) ? 'present' : 'absent',
-      ),
-    })),
-  );
+  p.builds = [];
+  for (const { strategy, rows } of bySetup) for (const r of rows) p.builds.push(await compRow(r, lang, strategy));
+  p.current = urlOf(d.id, lang);
+  p.gear = (await gearNeedsForDuty(d.id)).map((x) => ({ ...x.need, holder: x.holder.id }));
+  p.needs = await needsFor([d.id]);
 }
 ---
 
@@ -50,14 +46,24 @@ if (kind === 'duty') {
   (kind === 'duty' || sources.length > 0) && (
     <div class="gw-entity-foot not-content">
       {kind === 'duty' && (
-        <Panel kicker={p.zone ? p.zone.text : undefined} title={_('carriedBy')}>
-          {p.zone && <a slot="actions" href={p.zone.href}>{_('zone')} →</a>}
-          {p.rows.length === 0 ? (
-            <p class="gw-muted">{_('inNoStrategy')}</p>
+        <Panel kicker={_('duty')} title={_('buildsByStrategy')}>
+          {p.builds.length > 0 ? (
+            <>
+              <p class="gw-muted gw-entity-foot__hint">{_('buildsByStrategyHint')}</p>
+              <Composition rows={p.builds} current={p.current} />
+            </>
           ) : (
-            <DutyMatrix strategies={p.strategies} rows={p.rows} />
+            <p class="gw-muted">{_('inNoStrategy')}</p>
           )}
         </Panel>
+      )}
+      {kind === 'duty' && p.gear.length > 0 && <Panel title={_('gearForDuty')}><GearNeeds needs={p.gear} hideDuties /></Panel>}
+      {kind === 'duty' && p.needs.length > 0 && <Panel title={_('consumables')}><Needs needs={p.needs} /></Panel>}
+      {kind === 'duty' && p.zone && (
+        <p class="gw-entity-foot__region">
+          <span class="gw-muted">{_('region')}{lang === 'fr' ? ' :' : ':'}</span> <strong>{p.region ?? '—'}</strong>
+          · <a href={`${p.zone.href}#map`}>{_('seeMap')} →</a>
+        </p>
       )}
       {sources.length > 0 && (
         <Panel tone="info" kicker={_('source')}>
@@ -82,5 +88,7 @@ if (kind === 'duty') {
   .gw-entity-foot { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gw-space-4); margin-top: var(--gw-space-6); }
   .gw-entity-foot a { color: var(--gw-accent-text); text-decoration: none; }
   .gw-entity-foot a:hover { color: var(--gw-accent-strong); text-decoration: underline; }
+  .gw-entity-foot__hint { margin: 0 0 var(--gw-space-3); font-size: var(--gw-text-sm); }
+  .gw-entity-foot__region { margin: 0; font-size: var(--gw-text-sm); }
   .gw-entity-foot__credit { margin: 0 0 var(--gw-space-2); }
 </style>

@@ -1,4 +1,4 @@
-import { defineCollection, reference } from 'astro:content';
+import { defineCollection, reference, type SchemaContext } from 'astro:content';
 import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 import { docsLoader } from '@astrojs/starlight/loaders';
@@ -10,13 +10,13 @@ const tr = z.object({ fr: z.string(), en: z.string().optional() });
 const doc = reference('docs');
 const level = z.enum(['required', 'recommended', 'optional']);
 
-/** How necessary a Consumable is, for a Zone, Strategy, Role or Duty. */
+/** How necessary a Consumable is, for a Zone, Strategy, Role (of one Strategy) or Duty. */
 const requirement = z.object({
   level,
   target: z.discriminatedUnion('type', [
     z.object({ type: z.literal('zone'), zone: doc }),
     z.object({ type: z.literal('strategy'), strategy: doc }),
-    z.object({ type: z.literal('role'), role: doc }),
+    z.object({ type: z.literal('role'), strategy: doc, role: z.string() }),
     z.object({ type: z.literal('duty'), duty: doc }),
   ]),
   reason: tr.optional(),
@@ -40,9 +40,12 @@ const gearNeed = z.object({
   reason: tr.optional(),
 });
 
-/** A Role in a Strategy: which Build it runs and which Duties it carries, in route order. */
+/**
+ * A Role in a Strategy: its name as the source gives it (T1, MT, V1…), the Build it runs and the
+ * Duties it carries, in route order. Roles have no pages: a Role only exists within its Strategy.
+ */
 const strategyRole = z.object({
-  role: doc,
+  role: z.string(),
   /** Missing when the source publishes no bar for this Role. */
   build: doc.optional(),
   duties: z.array(doc).default([]),
@@ -66,11 +69,15 @@ const sources = z.array(source).default([]);
  * the French file; English twins have no `kind` and fall into the plain-page branch.
  * Gear, Gear sets and Consumables have no pages: they are data collections below.
  */
-const entity = z.discriminatedUnion('kind', [
+const entity = ({ image }: SchemaContext) => z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('zone'),
     sources,
-    roles: z.array(doc),
+    /** Parts of the map its Duties are grouped by, in sidebar order. */
+    regions: z.array(z.object({ id: z.string(), name: tr })),
+    /** A map of the Zone, credited to its author. */
+    map: z.object({ image: image(), alt: tr, author: z.string(), source: z.url() }).optional(),
+    /** Run order. */
     duties: z.array(doc),
     runs: z
       .array(
@@ -94,10 +101,11 @@ const entity = z.discriminatedUnion('kind', [
     roles: z.array(strategyRole),
     sources,
   }),
-  z.object({ kind: z.literal('role'), label: z.string(), sources }),
   z.object({
     kind: z.literal('duty'),
     label: z.string(),
+    /** Region of its Zone (an id from the Zone's `regions`). */
+    region: z.string(),
     sources,
     run: z.object({ id: z.string(), at: z.string().regex(/^\d+(:\d{2}){1,2}$/) }).optional(),
   }),

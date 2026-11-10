@@ -20,7 +20,7 @@ export type Level = Requirement['level'];
 export type StrategyRole = Entity<'strategy'>['data']['roles'][number];
 type Tr = { fr: string; en?: string };
 
-/** `en/fow/roles/v1` → `fow/roles/v1`; ids of index pages have no `/index`. */
+/** `en/fow/duties/toc` → `fow/duties/toc`; ids of index pages have no `/index`. */
 export const baseId = (id: string) => (id === 'en' ? 'index' : id.startsWith('en/') ? id.slice(3) : id);
 export const langOf = (id: string): Lang => (id === 'en' || id.startsWith('en/') ? 'en' : 'fr');
 export const refId = (r: string | { id: string }) => (typeof r === 'string' ? r : r.id);
@@ -85,10 +85,19 @@ export const zoneIdOfStrategy = (id: string | { id: string }) => baseId(refId(id
 export async function zoneOf(id: string | { id: string }): Promise<Entity<'zone'> | undefined> {
   const b = baseId(refId(id));
   if (b.split('/')[1] === 'strategies') return entity(zoneIdOfStrategy(b), 'zone');
-  return (await entities('zone')).find(
-    (z) => z.data.roles.some((r) => refId(r) === b) || z.data.duties.some((d) => refId(d) === b),
-  );
+  return (await entities('zone')).find((z) => z.data.duties.some((d) => refId(d) === b));
 }
+
+/** A Zone's Regions in sidebar order, each with its Duties in run order. */
+export async function regionsOf(zoneId: string) {
+  const z = await entity(zoneId, 'zone');
+  if (!z) return [];
+  const duties = await Promise.all(z.data.duties.map((d) => entity(d, 'duty')));
+  return z.data.regions.map((r) => ({ ...r, duties: duties.filter((d) => d?.data.region === r.id) as Entity<'duty'>[] }));
+}
+
+/** Requirement target id of a Role, which only exists within its Strategy: `fow/strategies/t2way#VoS`. */
+export const roleTargetId = (strategy: string | { id: string }, role: string) => `${baseId(refId(strategy))}#${role}`;
 
 /** A Zone's Strategies: the default first, then larger teams first. */
 export async function strategiesOf(zoneId: string) {
@@ -111,16 +120,6 @@ export async function defaultStrategy(zoneId: string) {
 async function dutyOrder(zoneId: string) {
   const z = await entity(zoneId, 'zone');
   return new Map((z?.data.duties ?? []).map((d, i) => [refId(d), i]));
-}
-
-/** What a Role does in each Strategy of its Zone (null where it doesn't take part). */
-export async function strategiesOfRole(roleId: string) {
-  const zone = await zoneOf(roleId);
-  if (!zone) return [];
-  return (await strategiesOf(zone.id)).map((s) => ({
-    strategy: s,
-    row: s.data.roles.find((r) => refId(r.role) === baseId(roleId)) ?? null,
-  }));
 }
 
 /** Roles carrying a Duty in each Strategy. */
@@ -309,7 +308,7 @@ export async function kitFor(strategy: Entity<'strategy'>, row: StrategyRole) {
     build,
     loadout: build ? await mergedLoadout(build) : undefined,
     gear: build ? combineNeeds(await gearFor(build, duties)) : [],
-    consumables: await needsFor([zoneIdOfStrategy(strategy.id), strategy.id, refId(row.role), ...duties]),
+    consumables: await needsFor([zoneIdOfStrategy(strategy.id), strategy.id, roleTargetId(strategy, row.role), ...duties]),
   };
 }
 
@@ -317,8 +316,12 @@ export async function kitFor(strategy: Entity<'strategy'>, row: StrategyRole) {
 
 export const targetId = (r: Requirement) => {
   const t = r.target;
-  return refId(t.type === 'zone' ? t.zone : t.type === 'strategy' ? t.strategy : t.type === 'role' ? t.role : t.duty);
+  if (t.type === 'role') return roleTargetId(t.strategy, t.role);
+  return refId(t.type === 'zone' ? t.zone : t.type === 'strategy' ? t.strategy : t.duty);
 };
+
+/** What a `via` target is called: a Role by its name, anything else by its page title. */
+export const targetTitle = async (via: string, lang: Lang) => (via.includes('#') ? via.split('#')[1] : titleOf(via, lang));
 
 export interface Need { item: Consumable; req: Requirement; via: string }
 

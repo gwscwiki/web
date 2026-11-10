@@ -47,7 +47,6 @@ const expectedKind = (id) => {
   const p = id.split('/');
   if (p[0] === 'builds') return p.length === 2 ? 'core' : p.length === 3 ? 'build' : undefined;
   if (p[1] === 'strategies' && p.length === 3) return 'strategy';
-  if (p[1] === 'roles' && p.length === 3) return 'role';
   if (p[1] === 'duties' && p.length === 3) return 'duty';
   if (p.length === 1 && !['index', 'about', 'builds'].includes(p[0])) return 'zone';
   return undefined;
@@ -57,13 +56,17 @@ for (const [id, { file, fm }] of fr) {
   if ((fm.kind ?? undefined) !== want) err(file, `kind is "${fm.kind ?? '(none)'}" but the path says "${want ?? '(plain page)'}"`);
 }
 
-// 4. Every Role and Duty sits in exactly one Zone; Zone lists point at the right kinds.
+// 4. Every Duty sits in exactly one Zone and in one of that Zone's Regions; Region ids are unique.
 const zones = [...fr].filter(([, e]) => e.fm.kind === 'zone');
+for (const [, { file, fm }] of zones) {
+  const ids = (fm.regions ?? []).map((r) => r.id);
+  if (new Set(ids).size !== ids.length) err(file, 'region ids must be unique');
+}
 for (const [id, { file, fm }] of fr) {
-  if (fm.kind !== 'role' && fm.kind !== 'duty') continue;
-  const key = fm.kind === 'role' ? 'roles' : 'duties';
-  const n = zones.filter(([, z]) => (z.fm[key] ?? []).includes(id)).length;
-  if (n !== 1) err(file, `listed by ${n} Zones (must be exactly 1)`);
+  if (fm.kind !== 'duty') continue;
+  const owners = zones.filter(([, z]) => (z.fm.duties ?? []).includes(id));
+  if (owners.length !== 1) err(file, `listed by ${owners.length} Zones (must be exactly 1)`);
+  else if (!(owners[0][1].fm.regions ?? []).some((r) => r.id === fm.region)) err(file, `region "${fm.region}" is not a Region of its Zone`);
 }
 
 // 5. skillNotes reference skills that are in the Build's code; codes decode.
@@ -74,7 +77,7 @@ for (const [, { file, fm }] of fr) {
   for (const n of fm.skillNotes ?? []) if (!skills.includes(n.skill)) err(file, `skillNotes: skill ${n.skill} is not in the code`);
 }
 
-// 6. Strategies: exactly one default per Zone; Roles and Duties from their own Zone; Builds exist.
+// 6. Strategies: exactly one default per Zone; Role names unique within it; Duties from its own Zone; Builds exist.
 const strategies = [...fr].filter(([, e]) => e.fm.kind === 'strategy');
 const kindOf = (id) => fr.get(id)?.fm.kind;
 for (const [id, { file }] of zones) {
@@ -85,7 +88,6 @@ for (const [id, { file, fm }] of strategies) {
   const zone = fr.get(id.split('/')[0])?.fm;
   const seen = new Set();
   for (const r of fm.roles ?? []) {
-    if (!(zone?.roles ?? []).includes(r.role)) err(file, `role ${r.role} is not a Role of its Zone`);
     if (seen.has(r.role)) err(file, `role ${r.role} listed twice`);
     seen.add(r.role);
     if (r.build && kindOf(r.build) !== 'build') err(file, `${r.role}: build ${r.build} is not a Build`);
@@ -121,7 +123,12 @@ for (const [id, { f, d }] of consumables) {
   if (!CONSUMABLE_KINDS.includes(id.split('/')[0])) err(f, `unknown consumable folder in "${id}"`);
   for (const r of d.requirements ?? []) {
     const t = r.target ?? {};
-    if (kindOf(t[t.type]) !== t.type) err(f, `requirement target ${t.type} "${t[t.type]}" not found`);
+    if (t.type === 'role') {
+      // A Role only exists within its Strategy.
+      const s = fr.get(t.strategy)?.fm;
+      if (s?.kind !== 'strategy') err(f, `requirement target role: strategy "${t.strategy}" not found`);
+      else if (!(s.roles ?? []).some((x) => x.role === t.role)) err(f, `requirement target role: no role "${t.role}" in ${t.strategy}`);
+    } else if (kindOf(t[t.type]) !== t.type) err(f, `requirement target ${t.type} "${t[t.type]}" not found`);
   }
 }
 for (const [, { file, fm }] of fr) {
@@ -159,6 +166,16 @@ for (const f of files) {
   }
   for (const line of body.split('\n')) if ((line.match(new RegExp(`<(${BLOCKS})\\b`, 'g')) ?? []).length > 1) err(f, `one block per line: ${line.trim()}`);
 }
+
+// 8b. Inline refs `[…](kind:id)` (src/plugins/remark-refs.mjs) point at real catalog entries.
+// Skill IDs are checked at build time against game data.
+const yamlIds = (dir) => new Set(walk(dir).filter((f) => f.endsWith('.yaml')).map((f) => relative(dir, f).replace(/\\/g, '/').replace(/\.yaml$/, '')));
+const catalog = { cons: yamlIds('src/content/consumables'), gear: yamlIds('src/content/gear'), set: yamlIds('src/content/gear-sets') };
+for (const f of files)
+  for (const m of split(f).body.matchAll(/\]\((skill|cons|gear|set):([^)\s]+)\)/g)) {
+    if (m[1] === 'skill') { if (!/^\d+$/.test(m[2])) err(f, `skill ref "${m[2]}" must be a game ID`); }
+    else if (!catalog[m[1]].has(m[2])) err(f, `no ${m[1]} "${m[2]}" for ref`);
+  }
 
 // 9. Media: caps, empty alt, unreferenced files (Media conventions).
 const media = existsSync(MEDIA) ? walk(MEDIA) : [];
