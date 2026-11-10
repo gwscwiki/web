@@ -267,6 +267,28 @@ h1#_top {
 .sl-markdown-content h3:not(:where(.not-content *)) {
   font-size: var(--gw-text-lg);
 }
+/* The h2 above is a flex block, so Starlight's anchor link (meant to sit inline after the heading)
+   would wrap onto an empty line of its own: pin it at the end of the heading row instead. */
+.sl-markdown-content .sl-heading-wrapper.level-h2:not(:where(.not-content *)) {
+  position: relative;
+}
+.sl-markdown-content .sl-heading-wrapper.level-h2:not(:where(.not-content *)) > .sl-anchor-link {
+  position: absolute;
+  inset-inline-end: 0;
+  top: 0.35em;
+  margin: 0;
+}
+/* Prose rhythm: sections apart, a heading tight to its content. Starlight sizes these in em of the
+   heading wrapper (h2 size), which made the gaps far larger than the text; fixed steps instead. */
+.sl-markdown-content :not(h1, h2, h3, h4, h5, h6, .sl-heading-wrapper) + .sl-heading-wrapper:not(:where(.not-content *)) {
+  margin-top: var(--gw-space-5);
+}
+.sl-markdown-content .sl-heading-wrapper:not(:where(.not-content *)) + :not(:where(.not-content *)) {
+  margin-top: var(--gw-space-2);
+}
+.sl-markdown-content :is(ul, ol):not(:where(.not-content *)) > li + li {
+  margin-top: var(--gw-space-1);
+}
 
 .sl-markdown-content a:not(:where(.not-content *)) {
   color: var(--gw-accent-text);

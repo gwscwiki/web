@@ -16,6 +16,6 @@ This supersedes the Gear and Consumable parts of ADR 0001 (they no longer have F
 
 ## Consequences
 
-- Consumables keep Requirements (Zone, Strategy, Role or Duty); only Gear moved to Gear needs.
+- Consumables keep Requirements (Zone, Strategy, Role or Duty); only Gear moved to Gear needs. Role targets now name their Strategy (ADR 0004).
 - Gear needs have no Strategy scope: if one Strategy wants different gear for the same Build and Duty, that needs a new field.
 - The Guild Wars Wiki is English-only, so French readers land on English pages.

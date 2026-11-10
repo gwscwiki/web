@@ -23,7 +23,7 @@ npm run build          # fetches game data from build-wars at a pinned commit; c
 
 | What | Where |
 |---|---|
-| Pages (Zone, Strategy, Role, Duty, core, Build) | `src/content/docs/…` (French) and `src/content/docs/en/…` (English: title, summary, prose only) |
+| Pages (Zone, Strategy, Duty, core, Build; Roles live inside their Strategy, [ADR 0004](docs/adr/0004-roles-without-pages-duties-by-region.md)) | `src/content/docs/…` (French) and `src/content/docs/en/…` (English: title, summary, prose only) |
 | Gear catalog, Gear sets, Consumables (no pages; link to the Guild Wars Wiki, [ADR 0003](docs/adr/0003-gear-and-consumables-without-pages.md)) | `src/content/gear/{weapons,runes,insignias}/`, `src/content/gear-sets/{armor,weapons}/`, `src/content/consumables/<kind>/` (YAML) |
 | Skill nicknames | `src/content/skill-nicknames.yaml` |
 | Strategy source notes | `.scratch/gw-kb/research/gwscr-fow-strategies.md` |
@@ -31,5 +31,7 @@ npm run build          # fetches game data from build-wars at a pinned commit; c
 | Game icons | synced from the Guild Wars Wiki into `src/assets/icons/synced/` (gitignored); hand-picked overrides in `src/assets/icons/manual/<kind>/<id>` ([ADR 0002](docs/adr/0002-icons-from-gww-images.md)) |
 | Design system | tokens and global styles in `src/styles/`, primitives in `src/components/ui/`, rules in [`docs/design-system.md`](docs/design-system.md), live reference at `/design-system/` |
 | Prose blocks | `src/components/blocks/` (auto-imported: `<SkillBar code>`, `<BuildBar build>`, `<GearCard gear>`, `<DutyBadge duty>`, `<Loop src>`, `<YouTube id>`) |
+| Inline refs | Markdown links, turned into chips by `src/plugins/remark-refs.mjs`: `[Vow of Strength](skill:1759)`, `[Legionnaire](cons:summoning-stones/legionnaire-summoning-crystal)`, `[…](gear:runes/…)`, `[…](set:weapons/shield-slashing)`. The chip shows the in-game name in the reader’s language. |
+| Duty pages | Body in four sections: `## But` / `## Objectif` / `## Menaces` / `## Solutions` (EN: Purpose / Objective / Threats / Solutions). Who carries the duty, with which build, is generated below the prose. |
 | Generated cross-links per page type | `src/components/entity/EntityPanel.astro` |
 | Game data loaders | `src/loaders/gw-data.ts`, pin in `src/lib/gw/source.mjs` |

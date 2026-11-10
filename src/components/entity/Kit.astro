@@ -7,14 +7,14 @@ import BuildBar from '../blocks/BuildBar.astro';
 import LoadoutTable from '../gear/LoadoutTable.astro';
 import GearNeeds from '../gear/GearNeeds.astro';
 import Needs from './Needs.astro';
-import { entity, kitFor, refId, tr } from '../../lib/kb';
+import { entity, kitFor, tr } from '../../lib/kb';
 import { langFromLocals, t } from '../../lib/ui';
 
 interface Props { strategy: string; role: string; showBar?: boolean }
 const lang = langFromLocals(Astro.locals);
 const _ = t(lang);
 const s = await entity(Astro.props.strategy, 'strategy');
-const row = s?.data.roles.find((r) => refId(r.role) === refId(Astro.props.role));
+const row = s?.data.roles.find((r) => r.role === Astro.props.role);
 if (!s || !row) throw new Error(`Kit: ${Astro.props.role} is not in Strategy ${Astro.props.strategy}`);
 const kit = await kitFor(s, row);
 const note = tr(row.note, lang);

@@ -1,6 +1,6 @@
 ---
 /** Consumables with their Requirement level, linking to the Guild Wars Wiki. `showVia` names the target that matched. */
-import { consumableName, consumableWiki, titleOf, tr, type Need } from '../../lib/kb';
+import { consumableName, consumableWiki, targetTitle, tr, type Need } from '../../lib/kb';
 import { iconForConsumable } from '../../lib/gw/icons';
 import { langFromLocals, t } from '../../lib/ui';
 import { GameIcon } from '../ui';
@@ -16,7 +16,7 @@ const rows = await Promise.all(
     label: consumableName(n.item, lang),
     href: consumableWiki(n.item),
     icon: iconForConsumable(n.item),
-    via: showVia ? await titleOf(n.via, lang) : undefined,
+    via: showVia ? await targetTitle(n.via, lang) : undefined,
     reason: tr(n.req.reason, lang),
   })),
 );

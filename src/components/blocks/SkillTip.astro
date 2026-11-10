@@ -1,0 +1,32 @@
+---
+/** Tooltip body for one skill (name, costs, game description). Shared by SkillBar and inline <Ref>. Not a prose block. */
+import { renderDescription } from '../../lib/gw/describe';
+import { langFromLocals, t } from '../../lib/ui';
+import { Stat } from '../ui';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props { skill: CollectionEntry<'skills'>['data'] }
+const { skill: s } = Astro.props;
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+---
+
+<strong class="gw-skilltip__name">{s.name[lang]}</strong>
+{lang === 'fr' && <span class="gw-skilltip__en">{s.name.en}</span>}
+<span class="gw-skilltip__stats">
+  {s.energy > 0 && <Stat kind="energy" value={s.energy} label={_('energy')} />}
+  {s.adrenaline > 0 && <Stat kind="adrenaline" value={s.adrenaline} label={_('adrenaline')} />}
+  {s.sacrifice > 0 && <Stat kind="sacrifice" value={`${s.sacrifice}%`} label={_('sacrifice')} />}
+  <Stat kind="activation" value={s.activation} label={_('activation')} />
+  {s.recharge > 0 && <Stat kind="recharge" value={s.recharge} label={_('recharge')} />}
+</span>
+<span class="gw-skilltip__desc" set:html={renderDescription(s.description[lang])} />
+
+<style>
+  .gw-skilltip__name { display: block; font-family: var(--gw-font-display); font-size: var(--gw-text-sm); color: var(--gw-tooltip-fg); }
+  .gw-skilltip__en { display: block; color: var(--gw-tooltip-muted); font-size: var(--gw-text-2xs); font-weight: var(--gw-weight-regular); }
+  .gw-skilltip__stats { display: flex; flex-wrap: wrap; gap: var(--gw-space-3); margin-block: var(--gw-space-2); color: var(--gw-tooltip-fg); }
+  .gw-skilltip__stats :global(.gw-stat) { color: var(--gw-tooltip-fg); }
+  .gw-skilltip__desc { display: block; font-weight: var(--gw-weight-regular); }
+  .gw-skilltip__desc :global(.gw-gray) { color: var(--gw-tooltip-muted); }
+</style>

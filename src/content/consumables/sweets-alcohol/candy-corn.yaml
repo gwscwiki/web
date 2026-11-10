@@ -3,14 +3,24 @@ requirements:
   - level: recommended
     target:
       type: role
-      role: fow/roles/vos
+      strategy: fow/strategies/t2way
+      role: VoS
     reason:
       fr: +1 à tous les attributs.
       en: +1 to all attributes.
   - level: recommended
     target:
       type: role
-      role: fow/roles/solo-vos
+      strategy: fow/strategies/tuf-way-4
+      role: VoS
+    reason:
+      fr: +1 à tous les attributs.
+      en: +1 to all attributes.
+  - level: recommended
+    target:
+      type: role
+      strategy: fow/strategies/t2way
+      role: Solo VoS
     reason:
       fr: +1 à tous les attributs.
       en: +1 to all attributes.

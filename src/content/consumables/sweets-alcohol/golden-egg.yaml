@@ -3,8 +3,15 @@ requirements:
   - level: optional
     target:
       type: role
-      role: fow/roles/vos
+      strategy: fow/strategies/t2way
+      role: VoS
   - level: optional
     target:
       type: role
-      role: fow/roles/solo-vos
+      strategy: fow/strategies/tuf-way-4
+      role: VoS
+  - level: optional
+    target:
+      type: role
+      strategy: fow/strategies/t2way
+      role: Solo VoS

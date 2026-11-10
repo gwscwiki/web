@@ -11,6 +11,7 @@ wiki's icon link titles; template codes are verbatim and were decoded with `@bui
 - Only byline found: 4-man TUF-way FoW, "by Ryuka [TUF]".
 - So we credit each page by title, URL and last-edited date, plus Ryuka [TUF] on the TUF-way page,
   and we paraphrase/summarise rather than copy prose.
+- The FoW map on the Fissure of Woe page (https://i.imgur.com/mTmwBPm.jpeg, signed "by Xray") is reused on our Zone page as `src/assets/media/fow-map-xray.webp`, credited to Xray in the caption and in the Zone sources.
 
 ## Pages
 

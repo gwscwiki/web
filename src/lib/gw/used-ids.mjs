@@ -4,7 +4,7 @@
  * Plain JS on purpose: Node scripts import it without a TypeScript step.
  *
  * Scans every Markdown/MDX frontmatter and YAML file under src/content for: template `code`s,
- * `skill`, `modId`, `mods`, `base`, `<SkillBar code>` in prose, and Consumable `gwwTitle`s
+ * `skill`, `modId`, `mods`, `base`, `<SkillBar code>` and `[…](skill:<id>)` refs in prose, and Consumable `gwwTitle`s
  * (src/content/consumables/<kind>/<slug>.yaml).
  */
 import { readFile, readdir } from 'node:fs/promises';
@@ -64,6 +64,7 @@ export async function scanUsedIds() {
     const fm = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
     if (fm) visit(parseYaml(fm[1]) ?? {});
     for (const m of text.matchAll(/<SkillBar\s+code="([^"]+)"/g)) skillsInCode(m[1]).forEach((s) => used.skills.add(s));
+    for (const m of text.matchAll(/\]\(skill:(\d+)\)/g)) used.skills.add(Number(m[1]));
   }
   return used;
 }

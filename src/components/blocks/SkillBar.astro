@@ -3,10 +3,10 @@
 import { getEntry } from 'astro:content';
 import { decodeBar } from '../../lib/gw/templates';
 import { attributeName, PROFESSIONS, professionName } from '../../lib/gw/names';
-import { renderDescription } from '../../lib/gw/describe';
+import SkillTip from './SkillTip.astro';
 import { iconFor } from '../../lib/gw/icons';
 import { langFromLocals, t } from '../../lib/ui';
-import { Button, GameIcon, Stat, Tag, Tooltip } from '../ui';
+import { Button, GameIcon, Tag, Tooltip } from '../ui';
 
 interface Props {
   code: string;
@@ -49,18 +49,7 @@ const sec = bar.secondary ? PROFESSIONS[bar.secondary].abbr : '–';
               <span class="gw-bar__skill">
                 <GameIcon src={icon} label={s.name[lang]} size="lg" elite={s.elite} ring={mark && ring[mark]} decorative />
               </span>
-              <Fragment slot="tip">
-                <strong class="gw-bar__tip-name">{s.name[lang]}</strong>
-                {lang === 'fr' && <span class="gw-bar__tip-en">{s.name.en}</span>}
-                <span class="gw-bar__stats">
-                  {s.energy > 0 && <Stat kind="energy" value={s.energy} label={_('energy')} />}
-                  {s.adrenaline > 0 && <Stat kind="adrenaline" value={s.adrenaline} label={_('adrenaline')} />}
-                  {s.sacrifice > 0 && <Stat kind="sacrifice" value={`${s.sacrifice}%`} label={_('sacrifice')} />}
-                  <Stat kind="activation" value={s.activation} label={_('activation')} />
-                  {s.recharge > 0 && <Stat kind="recharge" value={s.recharge} label={_('recharge')} />}
-                </span>
-                <span class="gw-bar__desc" set:html={renderDescription(s.description[lang])} />
-              </Fragment>
+              <Fragment slot="tip"><SkillTip skill={s} /></Fragment>
             </Tooltip>
           ) : (
             <span class="gw-bar__skill">
@@ -125,12 +114,6 @@ const sec = bar.secondary ? PROFESSIONS[bar.secondary].abbr : '–';
   .gw-bar__skill { display: flex; flex-direction: column; align-items: center; gap: var(--gw-space-2); text-align: center; }
   .gw-bar__name { font-size: var(--gw-text-2xs); line-height: 1.25; color: var(--gw-text); overflow-wrap: break-word; hyphens: auto; }
 
-  .gw-bar__tip-name { display: block; font-family: var(--gw-font-display); font-size: var(--gw-text-sm); color: var(--gw-tooltip-fg); }
-  .gw-bar__tip-en { display: block; color: var(--gw-tooltip-muted); font-size: var(--gw-text-2xs); }
-  .gw-bar__stats { display: flex; flex-wrap: wrap; gap: var(--gw-space-3); margin-block: var(--gw-space-2); color: var(--gw-tooltip-fg); }
-  .gw-bar__stats :global(.gw-stat) { color: var(--gw-tooltip-fg); }
-  .gw-bar__desc { display: block; }
-  .gw-bar__desc :global(.gw-gray) { color: var(--gw-tooltip-muted); }
 
   .gw-bar__foot { display: flex; flex-wrap: wrap; gap: var(--gw-space-2); align-items: center; }
   .gw-bar__code {

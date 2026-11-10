@@ -1,0 +1,93 @@
+---
+/**
+ * Inline game reference inside prose: a skill, Consumable, Gear item or Gear set, shown with its icon
+ * and in-game name in the reader's language. Authors don't write this tag: they write a Markdown link
+ * (`[Vow of Strength](skill:1759)`) and src/plugins/remark-refs.mjs turns it into <Ref>.
+ */
+import { getEntry } from 'astro:content';
+import GearChip from '../gear/GearChip.astro';
+import SkillTip from './SkillTip.astro';
+import { consumableName, consumableWiki, gearItem, gearName, gearSet, slotsOf, tr, wikiUrl } from '../../lib/kb';
+import { iconFor, iconForConsumable, iconForGear } from '../../lib/gw/icons';
+import { langFromLocals } from '../../lib/ui';
+import { GameIcon, Tooltip } from '../ui';
+
+interface Props { kind: 'skill' | 'cons' | 'gear' | 'set'; id: string }
+const { kind, id } = Astro.props;
+const lang = langFromLocals(Astro.locals);
+
+let skill, cons, set;
+if (kind === 'skill') {
+  const s = (await getEntry('skills', id))?.data;
+  if (!s) throw new Error(`Ref: skill ${id} missing from the skills collection`);
+  skill = { s, icon: iconFor('skill', s.id), name: s.name[lang], href: wikiUrl(s.name.en) };
+}
+if (kind === 'cons') {
+  const c = await getEntry('consumables', id);
+  if (!c) throw new Error(`Ref: no Consumable "${id}" in src/content/consumables`);
+  cons = { name: consumableName(c, lang), href: consumableWiki(c), icon: iconForConsumable(c) };
+}
+if (kind === 'set') {
+  const g = await gearSet(id);
+  const items = [
+    ...(g.data.weapons ?? []),
+    ...slotsOf(g).flatMap((k) => [g.data.pieces![k]!.insignia, g.data.pieces![k]!.rune]).filter((x) => x != null),
+  ];
+  const gear = await Promise.all([...new Map(items.map((i) => [i.id, i])).values()].map((i) => gearItem(i)));
+  set = {
+    name: tr(g.data.name, lang)!.text,
+    icon: gear.map(iconForGear).find(Boolean),
+    lines: await Promise.all(gear.map((x) => gearName(x, lang))),
+    note: tr(g.data.note, lang)?.text,
+  };
+}
+---
+
+{skill && (
+  <Tooltip class="gw-ref" focusable={false}>
+    <a class="gw-ref__chip" href={skill.href} target="_blank" rel="noopener">
+      <GameIcon src={skill.icon} label={skill.name} size="xs" elite={skill.s.elite} decorative />
+      <span class="gw-ref__name">{skill.name}{skill.s.nickname && <span class="gw-ref__nick"> ({skill.s.nickname})</span>}</span>
+    </a>
+    <Fragment slot="tip"><SkillTip skill={skill.s} /></Fragment>
+  </Tooltip>
+)}
+{cons && (
+  <a class="gw-ref gw-ref__chip" href={cons.href} target="_blank" rel="noopener">
+    <GameIcon src={cons.icon} label={cons.name} size="xs" decorative />
+    <span class="gw-ref__name">{cons.name}</span>
+  </a>
+)}
+{kind === 'gear' && <GearChip gear={id} />}
+{set && (
+  <Tooltip class="gw-ref">
+    <span class="gw-ref__chip">
+      <GameIcon src={set.icon} label={set.name} size="xs" decorative />
+      <span class="gw-ref__name">{set.name}</span>
+    </span>
+    <Fragment slot="tip">
+      <strong class="gw-ref__tip-name">{set.name}</strong>
+      {set.lines.map((l) => <span class="gw-ref__tip-line">{l}</span>)}
+      {set.note && <span class="gw-ref__tip-note">{set.note}</span>}
+    </Fragment>
+  </Tooltip>
+)}
+
+<style>
+  .gw-ref { vertical-align: baseline; }
+  .gw-ref__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    vertical-align: -0.25em;
+    color: var(--gw-text-strong);
+    font-weight: var(--gw-weight-semibold);
+    text-decoration: none;
+  }
+  .gw-ref__chip :global(.gw-icon) { --_size: 1.2em; box-shadow: 0 0 0 1px var(--gw-border-strong); }
+  a.gw-ref__chip:hover .gw-ref__name { color: var(--gw-accent-strong); text-decoration: underline; }
+  .gw-ref__nick { color: var(--gw-text-muted); font-weight: var(--gw-weight-regular); }
+  .gw-ref__tip-name { display: block; margin-bottom: var(--gw-space-1); font-family: var(--gw-font-display); font-size: var(--gw-text-sm); }
+  .gw-ref__tip-line { display: block; }
+  .gw-ref__tip-note { display: block; margin-top: var(--gw-space-1); color: var(--gw-tooltip-muted); }
+</style>

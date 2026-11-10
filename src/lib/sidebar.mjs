@@ -1,7 +1,8 @@
 /**
  * Sidebar built at config time (Information architecture): one group per Zone with its Strategies
- * (default first, then larger teams), Roles and Duties; Roles and Duties follow the order in the French
- * Zone frontmatter (run order has one source). Builds grouped by core. Gear and Consumables have no pages.
+ * (default first, then larger teams) and its Duties, grouped by Region (Region order from the Zone,
+ * Duties in run order, both from the French Zone frontmatter). Roles have no pages: each Strategy page
+ * lists its own. Builds grouped by core. Gear and Consumables have no pages.
  *
  * Labels are compacted for the sidebar, and the details that matter for scanning are passed as data-*
  * attributes that base.css renders (§ Sidebar): a Strategy shows its team size and run time instead of
@@ -86,11 +87,15 @@ export function buildSidebar() {
           attrs: { class: 'gw-nav-strategy', 'data-team': String(fm.roles.length), 'data-time': fm.time?.replace(/^~\s*/, '') },
         };
       });
+    const regionOf = (slug) => frontmatter(join(DOCS, `${slug}.mdx`)).region;
+    const regions = fm.regions
+      .map((r) => ({ r, duties: fm.duties.filter((slug) => regionOf(slug) === r.id) }))
+      .filter((x) => x.duties.length)
+      .map(({ r, duties }) => group(r.name.fr, r.name.en, duties.map((slug) => ({ slug })), true, duties.length));
     return group(title(z), enTitle(z), [
       { slug: z, label: "Vue d'ensemble", translations: { en: 'Overview' } },
       group('Stratégies', 'Strategies', strategies, false, strategies.length),
-      group('Rôles', 'Roles', fm.roles.map((slug) => ({ slug })), true, fm.roles.length),
-      group('Duties', 'Duties', fm.duties.map((slug) => ({ slug })), true, fm.duties.length),
+      group('Duties', 'Duties', regions, false, fm.duties.length),
     ]);
   });
   const cores = readdirSync(join(DOCS, 'builds'), { withFileTypes: true })

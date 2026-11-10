@@ -6,6 +6,7 @@ import AutoImport from 'astro-auto-import';
 import starlightLinksValidator from 'starlight-links-validator';
 import rehypeLocaleLinks from './src/plugins/rehype-locale-links.mjs';
 import remarkMedia from './src/plugins/remark-media.mjs';
+import remarkRefs from './src/plugins/remark-refs.mjs';
 import { buildSidebar } from './src/lib/sidebar.mjs';
 
 // Repo name / domain still open (map). `base` only needs to change here; prose links adapt.
@@ -16,7 +17,7 @@ export default defineConfig({
   site,
   base,
   markdown: {
-    processor: unified({ remarkPlugins: [remarkMedia], rehypePlugins: [[rehypeLocaleLinks, { base }]] }),
+    processor: unified({ remarkPlugins: [remarkMedia, remarkRefs], rehypePlugins: [[rehypeLocaleLinks, { base }]] }),
   },
   integrations: [
     starlight({
@@ -55,6 +56,7 @@ export default defineConfig({
         './src/components/blocks/DutyBadge.astro',
         './src/components/blocks/Loop.astro',
         './src/components/blocks/BuildIndex.astro',
+        './src/components/blocks/Ref.astro',
         { '@astro-community/astro-embed-youtube': ['YouTube'] },
       ],
     }),
