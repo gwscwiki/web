@@ -1,0 +1,47 @@
+---
+import { entity, gameName, urlOf, type Loadout } from '../../lib/kb';
+import { attributeName } from '../../lib/gw/names';
+import { langFromLocals, t } from '../../lib/ui';
+
+interface Props { loadout: Loadout }
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const link = async (ref?: { id: string } | string) => {
+  if (!ref) return undefined;
+  const g = await entity(ref, 'gear');
+  return g ? { href: urlOf(g.id, lang), name: await gameName(g, lang) } : undefined;
+};
+const { loadout } = Astro.props;
+const sets = await Promise.all(
+  (loadout.weaponSets ?? []).map(async (s) => ({ id: s.id, weapons: await Promise.all(s.weapons.map(link)) })),
+);
+const slots = ['head', 'chest', 'hands', 'legs', 'feet'] as const;
+const armor = await Promise.all(
+  slots.map(async (slot) => {
+    const p = loadout.armor?.[slot];
+    return { slot, insignia: await link(p?.insignia), rune: await link(p?.rune), attribute: p?.attribute };
+  }),
+);
+---
+
+<table class="gw-loadout">
+  <tbody>
+    {
+      sets.map((s) => (
+        <tr>
+          <th>{_('weaponSet')} {s.id}</th>
+          <td colspan="2">{s.weapons.map((w) => w && <a href={w.href}>{w.name}</a>)}</td>
+        </tr>
+      ))
+    }
+    {
+      armor.map((a) => (
+        <tr>
+          <th>{_(a.slot)}{a.attribute != null && <small> (+1 {attributeName(a.attribute, lang)})</small>}</th>
+          <td>{a.insignia ? <a href={a.insignia.href}>{a.insignia.name}</a> : '—'}</td>
+          <td>{a.rune ? <a href={a.rune.href}>{a.rune.name}</a> : '—'}</td>
+        </tr>
+      ))
+    }
+  </tbody>
+</table>

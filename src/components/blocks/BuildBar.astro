@@ -1,0 +1,15 @@
+---
+/** Bar block from a Build reference; highlights swaps and filled slots against the core. */
+import SkillBar from './SkillBar.astro';
+import { entity, derived } from '../../lib/kb';
+
+interface Props { build: string }
+const b = await entity(Astro.props.build, 'build');
+if (!b) throw new Error(`BuildBar: no Build "${Astro.props.build}"`);
+const d = await derived(b);
+const marks: Record<number, 'swap' | 'filled'> = {};
+for (const s of d.swaps) marks[d.bar.skills.indexOf(s.to)] = 'swap';
+for (const f of d.filled) marks[d.bar.skills.indexOf(f.skill)] = 'filled';
+---
+
+<SkillBar code={b.data.code} marks={marks} />

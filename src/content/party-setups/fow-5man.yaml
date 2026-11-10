@@ -1,0 +1,8 @@
+zone: fow
+label: 5-man
+default: true
+roles:
+  - role: fow/roles/v1
+    duties: [fow/duties/toc]
+  - role: fow/roles/v3
+    duties: [fow/duties/griffs]

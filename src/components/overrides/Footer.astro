@@ -1,0 +1,24 @@
+---
+import Default from '@astrojs/starlight/components/Footer.astro';
+const lang = Astro.locals.starlightRoute.lang;
+---
+
+<Default />
+<footer class="gw-legal">
+  <p>
+    {lang === 'en'
+      ? 'Unofficial fansite, not affiliated with ArenaNet or NCSOFT. Game data: build-wars/gw-skilldata (in-game text).'
+      : 'Site de fans non officiel, sans lien avec ArenaNet ni NCSOFT. Données du jeu : build-wars/gw-skilldata (textes officiels).'}
+  </p>
+  <!-- Required notice, verbatim, in English in both locales (ArenaNet Content Use Policy, 2025-10-28). -->
+  <p lang="en">
+    © ArenaNet LLC. All rights reserved. NCSOFT, ArenaNet, Guild Wars, Guild Wars 2, GW2, Heart of Thorns, Path of
+    Fire, End of Dragons, Secrets of the Obscure, Janthir Wilds, Visions of Eternity, and all associated logos, designs,
+    and composite marks are trademarks or registered trademarks of NCSOFT Corporation. All other trademarks are the
+    property of their respective owners.
+  </p>
+</footer>
+
+<style>
+  .gw-legal { margin-top: 2rem; font-size: var(--sl-text-xs); color: var(--sl-color-gray-3); }
+</style>

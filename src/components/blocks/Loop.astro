@@ -1,0 +1,18 @@
+---
+/** Short single-Duty clip (Media conventions). `src` is the stem under src/assets/media; missing → build fails. */
+interface Props { src: string; alt?: string }
+const { src, alt } = Astro.props;
+const files = import.meta.glob<string>('/src/assets/media/**/*.{webm,mp4,webp}', { eager: true, query: '?url', import: 'default' });
+const find = (suffix: string) => Object.entries(files).find(([p]) => p.endsWith(`/${src}.${suffix}`))?.[1];
+const webm = find('webm');
+const mp4 = find('mp4');
+const poster = find('poster.webp');
+if (!webm || !mp4) throw new Error(`Loop: "${src}" needs ${src}.webm and ${src}.mp4 in src/assets/media`);
+---
+
+<video class="gw-loop" autoplay muted loop playsinline preload="none" poster={poster} aria-label={alt}>
+  <source src={webm} type="video/webm" />
+  <source src={mp4} type="video/mp4" />
+</video>
+
+<style>.gw-loop { width: 100%; max-width: 720px; border-radius: 0.4rem; }</style>

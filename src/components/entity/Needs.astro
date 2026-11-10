@@ -1,0 +1,52 @@
+---
+/** Requirements list. `mode="items"` lists the Gear/Consumables (on Zone/Role/Duty pages);
+ *  `mode="targets"` lists what an item is needed for (on Gear/Consumable pages). */
+import { Badge } from '@astrojs/starlight/components';
+import { gameName, titleOf, tr, urlOf, type Need } from '../../lib/kb';
+import { langFromLocals, t } from '../../lib/ui';
+
+interface Props { needs: Need[]; mode: 'items' | 'targets'; showVia?: boolean }
+const { needs, mode, showVia = false } = Astro.props;
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const variant = { required: 'danger', recommended: 'caution', optional: 'default' } as const;
+const rows = await Promise.all(
+  needs.map(async (n) => ({
+    n,
+    label: mode === 'items' ? await gameName(n.item, lang) : await titleOf(n.via, lang),
+    href: mode === 'items' ? urlOf(n.item.id, lang) : urlOf(n.via, lang),
+    via: showVia ? await titleOf(n.via, lang) : undefined,
+    reason: tr(n.req.reason, lang),
+    targetType: n.req.target.type,
+  })),
+);
+---
+
+{
+  rows.length === 0 ? (
+    <p class="gw-muted">{_('none')}</p>
+  ) : (
+    <ul class="gw-needs">
+      {rows.map((r) => (
+        <li>
+          <Badge text={_(r.n.req.level)} variant={variant[r.n.req.level]} />{' '}
+          {mode === 'targets' && <span class="gw-muted">{_(r.targetType)} </span>}
+          <a href={r.href}>{r.label}</a>
+          {r.via && <span class="gw-muted"> — {_('via')} {r.via}</span>}
+          {r.reason && (
+            <span>
+              {' '}: {r.reason.text}
+              {r.reason.untranslated && <em class="gw-muted"> ({_('notTranslated')})</em>}
+            </span>
+          )}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .gw-needs { list-style: none; padding: 0; }
+  .gw-needs li { margin-block: 0.3rem; }
+  .gw-muted { color: var(--sl-color-gray-3); }
+</style>

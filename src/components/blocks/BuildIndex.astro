@@ -1,0 +1,41 @@
+---
+import { buildsOfCore, entities, rolesRunning, titleOf, urlOf, zoneOf } from '../../lib/kb';
+import { langFromLocals, t } from '../../lib/ui';
+
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const cores = await Promise.all(
+  (await entities('core')).map(async (c) => ({
+    href: urlOf(c.id, lang),
+    title: await titleOf(c.id, lang),
+    builds: await Promise.all(
+      (await buildsOfCore(c.id)).map(async (b) => ({
+        href: urlOf(b.id, lang),
+        title: await titleOf(b.id, lang),
+        roles: await Promise.all(
+          (await rolesRunning(b.id)).map(async (r) => {
+            const z = await zoneOf(r.id);
+            return { href: urlOf(r.id, lang), title: `${z ? (await titleOf(z.id, lang)) + ' ' : ''}${await titleOf(r.id, lang)}` };
+          }),
+        ),
+      })),
+    ),
+  })),
+);
+---
+
+{
+  cores.map((c) => (
+    <section>
+      <h2><a href={c.href}>{c.title}</a></h2>
+      <ul>
+        {c.builds.map((b) => (
+          <li>
+            <a href={b.href}>{b.title}</a>
+            {b.roles.length > 0 && <> — {_('runningRoles')} {b.roles.map((r, i) => <>{i > 0 && ', '}<a href={r.href}>{r.title}</a></>)}</>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))
+}

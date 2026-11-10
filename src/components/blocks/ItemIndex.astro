@@ -1,0 +1,111 @@
+---
+/**
+ * Gear / Consumables index with filters (Information architecture):
+ * Zone → Duty (a Duty matches Requirements targeting it or its whole Zone), Role, level, type/kind.
+ * Plain client script over data embedded in the page; no Pagefind.
+ */
+import { Badge } from '@astrojs/starlight/components';
+import { consumableKind, entities, gameName, gearType, targetId, titleOf, urlOf, zoneOf } from '../../lib/kb';
+import { langFromLocals, t } from '../../lib/ui';
+
+interface Props { of: 'gear' | 'consumable' }
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const items = await entities(Astro.props.of);
+const typeOf = Astro.props.of === 'gear' ? gearType : consumableKind;
+
+const rows = await Promise.all(
+  items.map(async (item) => ({
+    href: urlOf(item.id, lang),
+    name: await gameName(item, lang),
+    type: typeOf(item.id),
+    reqs: await Promise.all(
+      item.data.requirements.map(async (r) => {
+        const target = targetId(r);
+        const zone = r.target.type === 'zone' ? target : (await zoneOf(target))?.id;
+        return { level: r.level, type: r.target.type, target, zone, label: await titleOf(target, lang) };
+      }),
+    ),
+  })),
+);
+rows.sort((a, b) => a.name.localeCompare(b.name, lang));
+
+const zones = await Promise.all(
+  (await entities('zone')).map(async (z) => ({
+    id: z.id,
+    title: await titleOf(z.id, lang),
+    duties: await Promise.all(z.data.duties.map(async (d) => ({ id: d.id, title: await titleOf(d.id, lang) }))),
+    roles: await Promise.all(z.data.roles.map(async (r) => ({ id: r.id, title: await titleOf(r.id, lang) }))),
+  })),
+);
+const types = [...new Set(rows.map((r) => r.type))];
+const variant = { required: 'danger', recommended: 'caution', optional: 'default' } as const;
+---
+
+<div class="gw-filters not-content" data-zones={JSON.stringify(zones.map((z) => ({ id: z.id, duties: z.duties.map((d) => d.id) })))}>
+  <label>{_('zone')}
+    <select name="zone"><option value="">{_('all')}</option>{zones.map((z) => <option value={z.id}>{z.title}</option>)}</select>
+  </label>
+  <label>{_('duty')}
+    <select name="duty"><option value="">{_('all')}</option>{zones.map((z) => z.duties.map((d) => <option value={d.id} data-zone={z.id}>{z.title} · {d.title}</option>))}</select>
+  </label>
+  <label>{_('role')}
+    <select name="role"><option value="">{_('all')}</option>{zones.map((z) => z.roles.map((r) => <option value={r.id} data-zone={z.id}>{z.title} · {r.title}</option>))}</select>
+  </label>
+  <label>{_('level')}
+    <select name="level"><option value="">{_('all')}</option>{(['required', 'recommended', 'optional'] as const).map((l) => <option value={l}>{_(l)}</option>)}</select>
+  </label>
+  <label>{_('type')}
+    <select name="type"><option value="">{_('all')}</option>{types.map((ty) => <option value={ty}>{_(ty)}</option>)}</select>
+  </label>
+</div>
+
+<ul class="gw-items not-content">
+  {
+    rows.map((r) => (
+      <li data-type={r.type} data-reqs={JSON.stringify(r.reqs.map(({ label, ...x }) => x))}>
+        <a href={r.href}>{r.name}</a> <span class="gw-muted">· {_(r.type)}</span>
+        <ul>
+          {r.reqs.map((q) => (
+            <li><Badge text={_(q.level)} variant={variant[q.level]} /> <span class="gw-muted">{_(q.type)}</span> {q.label}</li>
+          ))}
+        </ul>
+      </li>
+    ))
+  }
+</ul>
+
+<script>
+  type Req = { level: string; type: string; target: string; zone?: string };
+  for (const box of document.querySelectorAll<HTMLElement>('.gw-filters')) {
+    const list = box.nextElementSibling as HTMLElement;
+    const sel = (n: string) => box.querySelector<HTMLSelectElement>(`select[name="${n}"]`)!;
+    const zones: { id: string; duties: string[] }[] = JSON.parse(box.dataset.zones!);
+    const zoneOfDuty = (d: string) => zones.find((z) => z.duties.includes(d))?.id;
+    const apply = () => {
+      const [zone, duty, role, level, type] = ['zone', 'duty', 'role', 'level', 'type'].map((n) => sel(n).value);
+      // keep the Duty / Role pickers scoped to the chosen Zone
+      for (const o of box.querySelectorAll<HTMLOptionElement>('option[data-zone]')) o.hidden = !!zone && o.dataset.zone !== zone;
+      for (const li of list.querySelectorAll<HTMLElement>(':scope > li')) {
+        const reqs: Req[] = JSON.parse(li.dataset.reqs!);
+        const lv = (q: Req) => !level || q.level === level;
+        const place = (q: Req) => (duty ? q.target === duty || q.target === zoneOfDuty(duty) : zone ? q.zone === zone : true);
+        const okType = !type || li.dataset.type === type;
+        const okPlace = !(zone || duty) || reqs.some((q) => place(q) && lv(q));
+        const okRole = !role || reqs.some((q) => q.target === role && lv(q));
+        const okLevel = !level || zone || duty || role || reqs.some(lv);
+        li.hidden = !(okType && okPlace && okRole && okLevel);
+      }
+    };
+    box.addEventListener('change', apply);
+  }
+</script>
+
+<style>
+  .gw-filters { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; font-size: var(--sl-text-sm); }
+  .gw-filters label { display: flex; flex-direction: column; gap: 0.2rem; }
+  .gw-items { list-style: none; padding: 0; }
+  .gw-items > li { padding-block: 0.5rem; border-bottom: 1px solid var(--sl-color-gray-6); }
+  .gw-items ul { list-style: none; padding-inline-start: 1rem; font-size: var(--sl-text-sm); }
+  .gw-muted { color: var(--sl-color-gray-3); }
+</style>
