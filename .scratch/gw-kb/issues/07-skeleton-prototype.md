@@ -2,7 +2,7 @@
 
 Type: prototype
 Status: open
-Blocked by: 01, 04, 05, 06
+Blocked by:
 
 ## Question
 
@@ -34,3 +34,11 @@ From [Storage mapping](05-storage-mapping.md):
 - add the CI checks: EN page with no French twin, a `skillNotes` skill missing from the code, one default Party setup per Zone, each Role/Duty in exactly one Zone, the block-syntax lint
 - install `@sveltia/cms` exact-pinned and copy it into `public/admin/`
 - optionally try `bun run build`
+
+From [Information architecture](06-information-architecture.md):
+- lay out content by the path table there (Zone at the root, `roles/` and `duties/` subfolders, Builds under their core, Gear and Consumables in type folders)
+- build the sidebar at config time from the French Zone frontmatter (Roles and Duties in order) and check prev/next walks the run
+- one Sveltia collection per Gear/Consumable folder, with gear type and consumable kind derived from the path; CI check that `kind` matches the path
+- the rehype plugin that prefixes `base` and locale on root-path links, plus a links validator
+- `<GearIndex />` with the Zone → Duty filter, and a Role page's "what to bring" list
+- a Zone `runs` entry and a Duty `run` reference with a timestamp

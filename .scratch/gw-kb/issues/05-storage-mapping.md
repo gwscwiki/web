@@ -37,6 +37,10 @@ The chosen editor's formats then drive the mapping. With Sveltia:
 - polymorphic Requirement targets as `{ type, … }`
 - localised strings in shared data, either per-locale keys or `{ fr, en }` objects; this ticket chooses
 
+## Comments
+
+Superseded in part by [Information architecture](06-information-architecture.md): Gear `gearType` and the Consumable `kind` are dropped from frontmatter and derived from the type folder (`gear/runes/…`, `consumables/cons/…`). Zone run videos are `runs` on the Zone and `run: { id, at }` on the Duty.
+
 ## Answer
 
 Settled in a grilling session with the user (three rounds). ADR: [`docs/adr/0001-shared-data-in-french-frontmatter.md`](../../../docs/adr/0001-shared-data-in-french-frontmatter.md).
