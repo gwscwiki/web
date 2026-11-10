@@ -1,0 +1,21 @@
+name:
+  fr: Rôdeur — Bénédiction
+  en: Ranger — Blessed
+pieces:
+  head:
+    insignia: insignias/blessed-insignia
+    rune: runes/ranger-rune-of-superior-expertise
+    attribute: 23
+  chest:
+    insignia: insignias/blessed-insignia
+    rune: runes/rune-of-superior-vigor
+  hands:
+    insignia: insignias/blessed-insignia
+    rune: runes/rune-of-vitae
+  legs:
+    insignia: insignias/blessed-insignia
+  feet:
+    insignia: insignias/blessed-insignia
+note:
+  fr: 1 à 3 runes parmi Vitae, Rétablissement et Récupération. Le casque donne +1 en Expertise.
+  en: 1–3 runes among Vitae, Restoration and Recovery. The headpiece gives +1 Expertise.

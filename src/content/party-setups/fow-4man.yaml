@@ -1,7 +1,0 @@
-zone: fow
-label: 4-man
-roles:
-  - role: fow/roles/v1
-    duties: [fow/duties/toc, fow/duties/griffs]
-  - role: fow/roles/v3
-    duties: []

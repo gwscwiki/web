@@ -1,0 +1,69 @@
+---
+kind: strategy
+title: Roll-way à 5
+description: Roll-way à 5 joueurs, environ 10 minutes.
+label: 5-man roll-way
+time: ~10 min
+roles:
+  - role: fow/roles/t1
+    build: builds/sf-ranger/dash-iau
+    duties:
+      - fow/duties/quicky
+      - fow/duties/open-forge
+      - fow/duties/360
+      - fow/duties/tos
+      - fow/duties/bf
+      - fow/duties/tos-lord
+    route: quicky, open forge ball, 360, ToS, burning forest, ToS lord
+    note:
+      fr: Pas de cupcake avant la fin du 360, pour avancer en tirant les patrouilles de la forge.
+      en: No cupcake until 360 is done, so you can walk forward while pulling forge patrols.
+  - role: fow/roles/t3
+    build: builds/sf-ranger/iau-recall
+    duties:
+      - fow/duties/hold
+      - fow/duties/sheps
+      - fow/duties/worms
+      - fow/duties/bridge
+      - fow/duties/forest-wolf
+      - fow/duties/griffs
+    route: hold first, sheps/worms, bridge, forest wolf, griffs
+    note:
+      fr: "Case optionnelle : Recall (casser l’aggro en mettant les groupes de côté pour les griffons) ou Dash (vitesse)."
+      en: "Optional slot: Recall (break aggro while pulling groups aside for the griffons) or Dash (speed)."
+  - role: fow/roles/t4
+    build: builds/sf-assassin/ae-dash
+    duties:
+      - fow/duties/quicky
+      - fow/duties/hunt
+      - fow/duties/cave
+      - fow/duties/mage
+      - fow/duties/khobay
+    route: quicky, take slaves/hunt, cave, mage, Khobay
+  - role: fow/roles/v1
+    build: builds/vos/da
+    duties:
+      - fow/duties/toc
+      - fow/duties/camp
+      - fow/duties/north
+      - fow/duties/griffs
+    route: ToC, camp, north, griffs
+  - role: fow/roles/v2
+    build: builds/vos/da
+    duties:
+      - fow/duties/quicky
+      - fow/duties/open-forge
+      - fow/duties/360
+      - fow/duties/south
+      - fow/duties/quests
+      - fow/duties/menzies
+      - fow/duties/text-wolf
+    route: quicky, open forge spike, 360, south, quests, menz, text/wolf
+sources:
+  - title: 5-man roll-way FoW
+    url: https://wiki.gwscr.com/wiki/5-man_roll-way_FoW
+    edited: 2026-09-18
+    site: Speedclear Wiki
+---
+
+Variante à 5 joueurs de la roll-way (temps visé : ~10 min). La source donne pour chaque rôle sa route et sa barre ; l’équipement est celui de la [roll-way](/fow/strategies/rollway/).

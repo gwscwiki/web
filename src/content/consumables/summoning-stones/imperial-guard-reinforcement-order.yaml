@@ -1,0 +1,9 @@
+gwwTitle: Imperial Guard Reinforcement Order
+requirements:
+  - level: optional
+    target:
+      type: strategy
+      strategy: fow/strategies/rollway
+    reason:
+      fr: Pour les tanks, si vous en avez.
+      en: For tanks, if you have some.

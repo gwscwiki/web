@@ -1,0 +1,8 @@
+name:
+  fr: Bâton
+  en: Staff
+weapons:
+  - weapons/vos-staff
+note:
+  fr: Courir et lancer au bâton ; passer à la faux pour frapper.
+  en: Run and cast with the staff; switch to the scythe to hit.

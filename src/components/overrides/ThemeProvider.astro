@@ -1,0 +1,20 @@
+---
+/**
+ * Dark first (design direction): dark unless the reader switched to light.
+ * Keeps Starlight's `starlight-theme` storage key and the global it exposes.
+ */
+---
+
+{/* Inlined to avoid a flash of the wrong theme. */}
+<script is:inline>
+  window.StarlightThemeProvider = (() => {
+    const stored = typeof localStorage !== 'undefined' && localStorage.getItem('starlight-theme');
+    const theme = stored === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
+    return {
+      updatePickers(t = theme) {
+        document.querySelectorAll('gw-theme-toggle button').forEach((b) => b.setAttribute('aria-pressed', String(t === 'light')));
+      },
+    };
+  })();
+</script>

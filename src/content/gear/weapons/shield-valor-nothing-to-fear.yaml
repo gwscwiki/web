@@ -1,0 +1,7 @@
+mods:
+  - 349
+  - 332
+name:
+  fr: Bouclier (+60 santé sous maléfice, −3 dégâts sous maléfice)
+  en: Shield (+60 health while hexed, −3 damage while hexed)
+wiki: Shield

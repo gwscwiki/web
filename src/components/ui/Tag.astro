@@ -1,0 +1,48 @@
+---
+/**
+ * Tag — pill label ("ADVANCED TACTICS", "Requis", "ToC"). Renders a link when `href` is set.
+ *
+ *   <Tag tone="danger">Requis</Tag>   <Tag href="/fow/duties/toc/" tone="accent">ToC</Tag>
+ */
+import type { Tone } from './types';
+
+interface Props {
+  tone?: Tone;
+  size?: 'sm' | 'md';
+  href?: string;
+  title?: string;
+  class?: string;
+}
+const { tone = 'neutral', size = 'md', href, title, class: cls } = Astro.props;
+const El = href ? 'a' : 'span';
+---
+
+<El class:list={['gw-tag', `gw-tag--${tone}`, `gw-tag--${size}`, cls]} href={href} title={title}><slot /></El>
+
+<style>
+  .gw-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    border: 1px solid var(--gw-tone-neutral-border);
+    border-radius: var(--gw-radius-pill);
+    background: var(--gw-tone-neutral-bg);
+    color: var(--gw-tone-neutral-fg);
+    font-family: var(--gw-font-body);
+    font-weight: var(--gw-weight-semibold);
+    line-height: 1;
+    white-space: nowrap;
+    vertical-align: middle;
+    text-decoration: none;
+  }
+  .gw-tag--md { padding: 0.4em 0.75em; font-size: var(--gw-text-2xs); }
+  .gw-tag--sm { padding: 0.3em 0.6em; font-size: var(--gw-text-3xs); }
+  a.gw-tag { transition: filter var(--gw-duration-fast) var(--gw-ease); }
+  a.gw-tag:hover { filter: brightness(1.25); }
+
+  .gw-tag--accent { background: var(--gw-tone-accent-bg); color: var(--gw-tone-accent-fg); border-color: var(--gw-tone-accent-border); }
+  .gw-tag--info { background: var(--gw-tone-info-bg); color: var(--gw-tone-info-fg); border-color: var(--gw-tone-info-border); }
+  .gw-tag--success { background: var(--gw-tone-success-bg); color: var(--gw-tone-success-fg); border-color: var(--gw-tone-success-border); }
+  .gw-tag--warning { background: var(--gw-tone-warning-bg); color: var(--gw-tone-warning-fg); border-color: var(--gw-tone-warning-border); }
+  .gw-tag--danger { background: var(--gw-tone-danger-bg); color: var(--gw-tone-danger-fg); border-color: var(--gw-tone-danger-border); }
+</style>

@@ -1,0 +1,54 @@
+---
+/**
+ * What one Role brings in one Strategy: its Build's bar and Loadout, the Gear sets its Duties call
+ * for (combined, strongest level per set), and Consumables for the Zone, Strategy, Role and Duties.
+ */
+import BuildBar from '../blocks/BuildBar.astro';
+import LoadoutTable from '../gear/LoadoutTable.astro';
+import GearNeeds from '../gear/GearNeeds.astro';
+import Needs from './Needs.astro';
+import { entity, kitFor, refId, tr } from '../../lib/kb';
+import { langFromLocals, t } from '../../lib/ui';
+
+interface Props { strategy: string; role: string; showBar?: boolean }
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const s = await entity(Astro.props.strategy, 'strategy');
+const row = s?.data.roles.find((r) => refId(r.role) === refId(Astro.props.role));
+if (!s || !row) throw new Error(`Kit: ${Astro.props.role} is not in Strategy ${Astro.props.strategy}`);
+const kit = await kitFor(s, row);
+const note = tr(row.note, lang);
+const { showBar = true } = Astro.props;
+---
+
+<div class="gw-kit">
+  {note && <p class="gw-kit__note">{note.text}{note.untranslated && <em class="gw-muted"> ({_('notTranslated')})</em>}</p>}
+  {kit.build ? (
+    <>
+      {showBar && <BuildBar build={kit.build.id} />}
+      <h4 class="gw-kit__sub">{_('loadout')}</h4>
+      <LoadoutTable loadout={kit.loadout!} />
+      <h4 class="gw-kit__sub">{_('gearForDuties')}</h4>
+      <GearNeeds needs={kit.gear} />
+    </>
+  ) : (
+    <p class="gw-muted">{_('noPublishedBuild')}</p>
+  )}
+  <h4 class="gw-kit__sub">{_('consumables')}</h4>
+  <Needs needs={kit.consumables} showVia />
+</div>
+
+<style>
+  .gw-kit { display: grid; gap: var(--gw-space-2); }
+  .gw-kit :global(.gw-bar) { margin: 0; box-shadow: none; }
+  .gw-kit__note { margin: 0; color: var(--gw-text-muted); font-size: var(--gw-text-sm); }
+  .gw-kit__sub {
+    margin: var(--gw-space-3) 0 0;
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: var(--gw-text-3xs);
+    letter-spacing: var(--gw-tracking-wider);
+    text-transform: uppercase;
+    color: var(--gw-text-subtle);
+  }
+</style>

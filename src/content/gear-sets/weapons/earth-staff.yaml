@@ -1,0 +1,8 @@
+name:
+  fr: Bâton de terre q9
+  en: q9 Earth staff
+weapons:
+  - weapons/earth-staff-of-enchanting
+note:
+  fr: +5 énergie ou incantation rapide, au choix.
+  en: +5 energy or faster casting, as preferred.

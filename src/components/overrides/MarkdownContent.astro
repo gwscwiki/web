@@ -1,9 +1,11 @@
 ---
 import Default from '@astrojs/starlight/components/MarkdownContent.astro';
 import EntityPanel from '../entity/EntityPanel.astro';
+import EntityFooter from '../entity/EntityFooter.astro';
 ---
 
 <Default>
   <EntityPanel />
   <slot />
+  <EntityFooter />
 </Default>

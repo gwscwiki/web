@@ -1,0 +1,53 @@
+---
+/**
+ * Tooltip — game-style hover/focus card. The default slot is the trigger, `tip` the content.
+ * CSS only; the trigger is focusable so keyboard users get the same content.
+ *
+ *   <Tooltip><GameIcon … /><Fragment slot="tip">…</Fragment></Tooltip>
+ */
+interface Props {
+  placement?: 'top' | 'bottom';
+  /** Make the wrapper focusable (set false when the trigger is already a link/button). */
+  focusable?: boolean;
+  class?: string;
+}
+const { placement = 'bottom', focusable = true, class: cls } = Astro.props;
+---
+
+<span class:list={['gw-tt', `gw-tt--${placement}`, cls]} tabindex={focusable ? 0 : undefined}>
+  <slot />
+  <span class="gw-tt__pop" role="tooltip"><slot name="tip" /></span>
+</span>
+
+<style>
+  .gw-tt { position: relative; display: inline-flex; }
+  .gw-tt__pop {
+    position: absolute;
+    z-index: 20;
+    left: 50%;
+    width: max-content;
+    max-width: min(20rem, 90vw);
+    padding: var(--gw-space-3);
+    border: 1px solid var(--gw-border-accent);
+    border-radius: var(--gw-radius-md);
+    background: var(--gw-tooltip-bg);
+    box-shadow: var(--gw-shadow-pop);
+    color: var(--gw-tooltip-fg);
+    font-size: var(--gw-text-xs);
+    line-height: 1.5;
+    text-align: start;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translate(-50%, 4px);
+    transition: opacity var(--gw-duration-fast) var(--gw-ease), transform var(--gw-duration-fast) var(--gw-ease), visibility var(--gw-duration-fast);
+  }
+  .gw-tt--bottom .gw-tt__pop { top: calc(100% + var(--gw-space-2)); }
+  .gw-tt--top .gw-tt__pop { bottom: calc(100% + var(--gw-space-2)); transform: translate(-50%, -4px); }
+  .gw-tt:hover .gw-tt__pop,
+  .gw-tt:focus-within .gw-tt__pop {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+  }
+</style>

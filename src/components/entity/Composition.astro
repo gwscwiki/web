@@ -1,0 +1,66 @@
+---
+/** A Strategy's team: one row per Role with its Build and Duties; `showRoute` adds the source's own wording. */
+import { langFromLocals, t } from '../../lib/ui';
+import { Tag } from '../ui';
+
+interface Link { href: string; text: string }
+interface Row { role: Link; build?: Link & { profs: string }; duties: Link[]; route?: string }
+interface Props { rows: Row[]; showRoute?: boolean }
+const { rows, showRoute = false } = Astro.props;
+const _ = t(langFromLocals(Astro.locals));
+---
+
+<div class="gw-comp">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">{_('role')}</th>
+        <th scope="col">{_('build')}</th>
+        <th scope="col">{_('duties')}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map((r) => (
+          <tr>
+            <th scope="row"><a href={r.role.href}>{r.role.text}</a></th>
+            <td>
+              {r.build ? (
+                <span class="gw-comp__build"><a href={r.build.href}>{r.build.text}</a><Tag size="sm" tone="accent">{r.build.profs}</Tag></span>
+              ) : (
+                <span class="gw-muted">—</span>
+              )}
+            </td>
+            <td>
+              <span class="gw-comp__duties">
+                {r.duties.length ? r.duties.map((d) => <Tag href={d.href} tone="info" size="sm">{d.text}</Tag>) : <span class="gw-muted">{_('none')}</span>}
+              </span>
+              {showRoute && r.route && <span class="gw-comp__route"><q>{r.route}</q></span>}
+            </td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .gw-comp { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: var(--gw-text-sm); }
+  th, td { padding: var(--gw-space-2); text-align: start; vertical-align: top; border-bottom: 1px solid var(--gw-divider); }
+  tbody tr:last-child > * { border-bottom: 0; }
+  thead th {
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: var(--gw-text-3xs);
+    letter-spacing: var(--gw-tracking-wider);
+    text-transform: uppercase;
+    color: var(--gw-text-subtle);
+  }
+  tbody th { font-weight: var(--gw-weight-bold); white-space: nowrap; }
+  a { color: var(--gw-accent-text); text-decoration: none; }
+  a:hover { color: var(--gw-accent-strong); text-decoration: underline; }
+  .gw-comp__build { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--gw-space-2); }
+  .gw-comp__duties { display: flex; flex-wrap: wrap; gap: var(--gw-space-1); }
+  .gw-comp__route { display: block; margin-top: var(--gw-space-1); color: var(--gw-text-muted); font-size: var(--gw-text-2xs); }
+</style>

@@ -1,0 +1,8 @@
+name:
+  fr: Bouclier contre la foudre
+  en: Lightning shield
+weapons:
+  - weapons/shield-devotion-lightning
+note:
+  fr: Un bouclier se tient avec une arme à une main.
+  en: A shield goes with a one-handed weapon.

@@ -1,0 +1,65 @@
+/*
+ * Ornaments — the fantasy details (docs/design-system.md § Ornaments).
+ * Hand-drawn SVGs in src/assets/ornaments, used as CSS masks so they take their color
+ * from --gw-ornament / --gw-ornament-accent and follow the theme. Flat, no glow.
+ *
+ *   .gw-frame         four corner brackets inside any positioned box (Panel, PathCard, SkillBar)
+ *   .gw-frame--accent same, teal
+ *   .gw-divider       ruled line with a diamond centrepiece (<Divider />)
+ *   .gw-diamond       inline diamond glyph (headings, kickers)
+ */
+
+.gw-frame {
+  position: relative;
+}
+.gw-frame::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  background-color: var(--gw-ornament);
+  -webkit-mask:
+    url(../assets/ornaments/corner-tl.svg) top left / var(--gw-ornament-corner-size) no-repeat,
+    url(../assets/ornaments/corner-tr.svg) top right / var(--gw-ornament-corner-size) no-repeat,
+    url(../assets/ornaments/corner-bl.svg) bottom left / var(--gw-ornament-corner-size) no-repeat,
+    url(../assets/ornaments/corner-br.svg) bottom right / var(--gw-ornament-corner-size) no-repeat;
+  mask:
+    url(../assets/ornaments/corner-tl.svg) top left / var(--gw-ornament-corner-size) no-repeat,
+    url(../assets/ornaments/corner-tr.svg) top right / var(--gw-ornament-corner-size) no-repeat,
+    url(../assets/ornaments/corner-bl.svg) bottom left / var(--gw-ornament-corner-size) no-repeat,
+    url(../assets/ornaments/corner-br.svg) bottom right / var(--gw-ornament-corner-size) no-repeat;
+}
+.gw-frame--accent::before {
+  background-color: var(--gw-ornament-accent);
+}
+
+.gw-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--gw-space-2);
+  margin-block: var(--gw-space-5);
+  color: var(--gw-ornament);
+}
+.gw-divider::before,
+.gw-divider::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid var(--gw-border);
+}
+.gw-divider > span {
+  width: 6rem;
+  height: 1rem;
+  background-color: currentColor;
+  -webkit-mask: url(../assets/ornaments/divider.svg) center / contain no-repeat;
+  mask: url(../assets/ornaments/divider.svg) center / contain no-repeat;
+}
+
+.gw-diamond {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  flex: none;
+  background-color: var(--gw-ornament-accent);
+  -webkit-mask: url(../assets/ornaments/diamond.svg) center / contain no-repeat;
+  mask: url(../assets/ornaments/diamond.svg) center / contain no-repeat;
+}

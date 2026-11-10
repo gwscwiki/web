@@ -5,28 +5,54 @@ kind: core
 label: VoS
 code: OgCjkirMrSmXfbaXNX3lcXsX5iA
 loadout:
-  weaponSets:
-    - id: main
-      weapons:
-        - gear/weapons/zealous-scythe-of-enchanting
-  armor:
-    head:
-      insignia: gear/insignias/windwalker-insignia
-      rune: gear/runes/dervish-rune-of-superior-earth-prayers
-      attribute: 43
-    chest:
-      insignia: gear/insignias/windwalker-insignia
-      rune: gear/runes/rune-of-superior-vigor
-    hands:
-      insignia: gear/insignias/windwalker-insignia
-    legs:
-      insignia: gear/insignias/windwalker-insignia
-    feet:
-      insignia: gear/insignias/windwalker-insignia
+  armor: armor/vos-windwalker
+  weapons:
+    - weapons/vos-scythe
+    - weapons/vos-staff
+    - weapons/longbow
+gear:
+  - set: weapons/vos-forest-melee
+    level: recommended
+    duties: &a1
+      - fow/duties/forest
+      - fow/duties/sheps
+      - fow/duties/worms
+      - fow/duties/bridge
+      - fow/duties/forest-wolf
+    reason: &a2
+      fr: Équipement de forêt (page roll-way).
+      en: Forest equipment (roll-way page).
+  - set: weapons/shield-lightning
+    level: recommended
+    duties: *a1
+    reason: *a2
+  - set: weapons/shield-slashing
+    level: recommended
+    duties:
+      - fow/duties/bridge
+    reason:
+      fr: Pour le pont complet.
+      en: For the full bridge.
+  - set: armor/vos-forsaken
+    level: recommended
+    duties:
+      - fow/duties/backway
+    reason:
+      fr: Équipement du passage arrière de la forge (page roll-way).
+      en: Forge backway equipment (roll-way page).
+  - set: weapons/wand-shield-backway
+    level: recommended
+    duties:
+      - fow/duties/backway
+    reason:
+      fr: Équipement du passage arrière de la forge (page roll-way).
+      en: Forge backway equipment (roll-way page).
 ---
 
-Texte d'exemple sur le core VoS.
+Le core Vow of Strength : un derviche (D/–) qui spike les boules avec Vow of Strength, Sand Shards et Eremite’s Attack. Chaque build VoS part de cette barre et n’en change que quelques cases.
 
-Un bloc de barre depuis un code brut (affichage seul, ce n'est pas un Build) :
+Équipement de base et sets par duty : d’après la page [Roll-way](https://wiki.gwscr.com/wiki/Rollway) du Speedclear Wiki.
+
+Un bloc de barre depuis un code brut (affichage seul, ce n’est pas un Build) :
 
 <SkillBar code="OgCjkirMrOm3vNAo5CA4usXAAAAA" />

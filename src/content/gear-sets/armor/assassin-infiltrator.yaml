@@ -1,0 +1,17 @@
+name:
+  fr: Assassin — Infiltré (+10 contre le perçant)
+  en: Assassin — Infiltrator’s (+10 vs piercing)
+pieces:
+  head:
+    insignia: insignias/infiltrators-insignia
+  chest:
+    insignia: insignias/infiltrators-insignia
+  hands:
+    insignia: insignias/infiltrators-insignia
+  legs:
+    insignia: insignias/infiltrators-insignia
+  feet:
+    insignia: insignias/infiltrators-insignia
+note:
+  fr: La source ne précise pas les runes de cette armure.
+  en: The source gives no runes for this armor.

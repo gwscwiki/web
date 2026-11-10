@@ -1,0 +1,73 @@
+---
+kind: strategy
+title: Roll-way à 7
+description: Roll-way à 7 joueurs, environ 8 minutes.
+label: 7-man roll-way
+time: ~8 min
+roles:
+  - role: fow/roles/t1
+    build: builds/sf-ranger/dash-dark-prison
+    duties:
+      - fow/duties/hold
+      - fow/duties/tos
+      - fow/duties/bf
+    route: hold first, tos, bf
+  - role: fow/roles/t3
+    build: builds/sf-ranger/iau-recall
+    duties:
+      - fow/duties/quicky
+      - fow/duties/forest
+      - fow/duties/griffs
+    route: quicky, forest, griffs
+  - role: fow/roles/t4
+    build: builds/sf-assassin/ae-dash
+    duties:
+      - fow/duties/quicky
+      - fow/duties/hunt
+      - fow/duties/cave
+    route: quicky, take slaves/hunt, cave
+  - role: fow/roles/mt
+    build: builds/sf-assassin/ap-mt
+    duties:
+      - fow/duties/quicky
+      - fow/duties/open-forge
+      - fow/duties/90s
+      - fow/duties/south
+      - fow/duties/mage
+    route: quicky, open forge spike, 90s, south, mage/lord
+  - role: fow/roles/v1
+    build: builds/vos/rollway-dw
+    duties:
+      - fow/duties/quicky
+      - fow/duties/open-forge
+      - fow/duties/90s
+      - fow/duties/south
+      - fow/duties/khobay
+    route: quicky, open forge spike, 90s, south, khobay
+  - role: fow/roles/v2
+    build: builds/vos/da
+    duties:
+      - fow/duties/quicky
+      - fow/duties/camp
+      - fow/duties/top
+      - fow/duties/north
+      - fow/duties/menzies
+      - fow/duties/text-wolf
+    route: quicky, camp, top, north, menz, text/wolf
+  - role: fow/roles/v3
+    build: builds/vos/da
+    duties:
+      - fow/duties/toc
+      - fow/duties/forest
+      - fow/duties/griffs
+    route: toc, forest, griffs
+sources:
+  - title: 7-man roll-way FoW
+    url: https://wiki.gwscr.com/wiki/7-man_roll-way_FoW
+    edited: 2026-09-18
+    site: Speedclear Wiki
+---
+
+Variante à 7 joueurs de la roll-way (temps visé : ~8 min). La source donne pour chaque rôle sa route et sa barre ; l’équipement est celui de la [roll-way](/fow/strategies/rollway/).
+
+Le code du T1 sur la page source est tronqué d’un caractère (`OgcTc5+8Z6ASn5ucCS4gCCBC3B`) ; il décode comme le T1 de la roll-way à 8, qu’on utilise ici.

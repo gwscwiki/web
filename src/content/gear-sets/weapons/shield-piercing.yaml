@@ -1,0 +1,8 @@
+name:
+  fr: Bouclier contre le perçant
+  en: Piercing shield
+weapons:
+  - weapons/shield-devotion-piercing
+note:
+  fr: Un bouclier se tient avec une arme à une main.
+  en: A shield goes with a one-handed weapon.

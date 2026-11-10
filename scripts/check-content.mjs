@@ -42,26 +42,19 @@ for (const [id, f] of en) if (!fr.has(id)) err(f, `English page without a French
 const EN_ALLOWED = new Set(['title', 'description', 'sidebar', 'template', 'hero', 'tableOfContents', 'pagefind', 'draft', 'banner', 'head', 'lastUpdated', 'prev', 'next', 'editUrl']);
 for (const [, f] of en) for (const k of Object.keys(split(f).fm)) if (!EN_ALLOWED.has(k)) err(f, `shared field "${k}" belongs in the French file only`);
 
-// 3. `kind` matches the path (Information architecture).
+// 3. `kind` matches the path (Information architecture). Gear and Consumables have no pages (ADR 0003).
 const expectedKind = (id) => {
   const p = id.split('/');
   if (p[0] === 'builds') return p.length === 2 ? 'core' : p.length === 3 ? 'build' : undefined;
-  if (p[0] === 'gear') return p.length === 3 ? 'gear' : undefined;
-  if (p[0] === 'consumables') return p.length === 3 ? 'consumable' : undefined;
+  if (p[1] === 'strategies' && p.length === 3) return 'strategy';
   if (p[1] === 'roles' && p.length === 3) return 'role';
   if (p[1] === 'duties' && p.length === 3) return 'duty';
-  if (p.length === 1 && !['index', 'about', 'builds', 'gear', 'consumables'].includes(p[0])) return 'zone';
+  if (p.length === 1 && !['index', 'about', 'builds'].includes(p[0])) return 'zone';
   return undefined;
 };
-const GEAR_TYPES = ['weapons', 'weapon-sets', 'runes', 'insignias'];
-const CONSUMABLE_KINDS = ['cons', 'summoning-stones', 'powerstones', 'sweets-alcohol', 'other'];
 for (const [id, { file, fm }] of fr) {
   const want = expectedKind(id);
   if ((fm.kind ?? undefined) !== want) err(file, `kind is "${fm.kind ?? '(none)'}" but the path says "${want ?? '(plain page)'}"`);
-  const folder = id.split('/')[1];
-  if (fm.kind === 'gear' && !GEAR_TYPES.includes(folder)) err(file, `unknown gear folder "${folder}"`);
-  if (fm.kind === 'consumable' && !CONSUMABLE_KINDS.includes(folder)) err(file, `unknown consumable folder "${folder}"`);
-  if (fm.kind === 'gear' && 'gearType' in fm) err(file, 'gearType comes from the folder; remove it');
 }
 
 // 4. Every Role and Duty sits in exactly one Zone; Zone lists point at the right kinds.
@@ -81,15 +74,70 @@ for (const [, { file, fm }] of fr) {
   for (const n of fm.skillNotes ?? []) if (!skills.includes(n.skill)) err(file, `skillNotes: skill ${n.skill} is not in the code`);
 }
 
-// 6. Party setups: exactly one default per Zone.
-const setups = walk('src/content/party-setups').filter((f) => f.endsWith('.yaml')).map((f) => ({ f, ...parse(readFileSync(f, 'utf8')) }));
+// 6. Strategies: exactly one default per Zone; Roles and Duties from their own Zone; Builds exist.
+const strategies = [...fr].filter(([, e]) => e.fm.kind === 'strategy');
+const kindOf = (id) => fr.get(id)?.fm.kind;
 for (const [id, { file }] of zones) {
-  const n = setups.filter((s) => s.zone === id && s.default).length;
-  if (n !== 1) err(file, `${n} default Party setups (must be exactly 1)`);
+  const n = strategies.filter(([sid, s]) => sid.split('/')[0] === id && s.fm.default).length;
+  if (n !== 1) err(file, `${n} default Strategies (must be exactly 1)`);
+}
+for (const [id, { file, fm }] of strategies) {
+  const zone = fr.get(id.split('/')[0])?.fm;
+  const seen = new Set();
+  for (const r of fm.roles ?? []) {
+    if (!(zone?.roles ?? []).includes(r.role)) err(file, `role ${r.role} is not a Role of its Zone`);
+    if (seen.has(r.role)) err(file, `role ${r.role} listed twice`);
+    seen.add(r.role);
+    if (r.build && kindOf(r.build) !== 'build') err(file, `${r.role}: build ${r.build} is not a Build`);
+    for (const d of r.duties ?? []) if (!(zone?.duties ?? []).includes(d)) err(file, `${r.role}: duty ${d} is not a Duty of its Zone`);
+  }
+}
+
+// 6b. Data without pages (ADR 0003): Gear (type = folder), Gear sets (shape = folder),
+//     Consumables (kind = folder). Every reference points at something that exists.
+const yamlUnder = (dir) => (existsSync(dir) ? walk(dir).filter((f) => /\.ya?ml$/.test(f)) : []);
+const dataId = (dir, f) => relative(dir, f).replace(/\\/g, '/').replace(/\.ya?ml$/, '');
+const loadData = (dir) => new Map(yamlUnder(dir).map((f) => [dataId(dir, f), { f, d: parse(readFileSync(f, 'utf8')) ?? {} }]));
+const gear = loadData('src/content/gear');
+const sets = loadData('src/content/gear-sets');
+const consumables = loadData('src/content/consumables');
+for (const [id, { f, d }] of gear) {
+  if (!['weapons', 'runes', 'insignias'].includes(id.split('/')[0]) || id.split('/').length !== 2) err(f, `gear goes in weapons/, runes/ or insignias/ (got "${id}")`);
+  if (d.modId == null && d.base == null && !d.name) err(f, 'needs modId, base or name');
+}
+for (const [id, { f, d }] of sets) {
+  const type = id.split('/')[0];
+  if (type === 'armor') {
+    if (!d.pieces || d.weapons) err(f, 'an armor set has `pieces` and no `weapons`');
+    for (const [slot, piece] of Object.entries(d.pieces ?? {}))
+      for (const k of ['insignia', 'rune']) if (piece?.[k] && !gear.has(piece[k])) err(f, `${slot}.${k}: no gear "${piece[k]}"`);
+  } else if (type === 'weapons') {
+    if (!d.weapons?.length || d.pieces) err(f, 'a weapon set has `weapons` and no `pieces`');
+    for (const w of d.weapons ?? []) if (!gear.has(w)) err(f, `no gear "${w}"`);
+  } else err(f, `gear sets go in armor/ or weapons/ (got "${id}")`);
+}
+const CONSUMABLE_KINDS = ['cons', 'summoning-stones', 'powerstones', 'sweets-alcohol', 'other'];
+for (const [id, { f, d }] of consumables) {
+  if (!CONSUMABLE_KINDS.includes(id.split('/')[0])) err(f, `unknown consumable folder in "${id}"`);
+  for (const r of d.requirements ?? []) {
+    const t = r.target ?? {};
+    if (kindOf(t[t.type]) !== t.type) err(f, `requirement target ${t.type} "${t[t.type]}" not found`);
+  }
+}
+for (const [, { file, fm }] of fr) {
+  if (fm.kind !== 'core' && fm.kind !== 'build') continue;
+  const l = fm.loadout ?? {};
+  if (l.armor && !l.armor.startsWith('armor/')) err(file, `loadout.armor must be an armor set (got "${l.armor}")`);
+  for (const w of l.weapons ?? []) if (!w.startsWith('weapons/')) err(file, `loadout.weapons must be weapon sets (got "${w}")`);
+  for (const id of [l.armor, ...(l.weapons ?? [])].filter(Boolean)) if (!sets.has(id)) err(file, `loadout: no gear set "${id}"`);
+  for (const g of fm.gear ?? []) {
+    if (!sets.has(g.set)) err(file, `gear: no gear set "${g.set}"`);
+    for (const d of g.duties ?? []) if (kindOf(d) !== 'duty') err(file, `gear ${g.set}: "${d}" is not a Duty`);
+  }
 }
 
 // 7. Skill nicknames: every ID is used somewhere in content.
-const allText = [...files, ...walk('src/content/party-setups')].map((f) => readFileSync(f, 'utf8')).join('\n');
+const allText = files.map((f) => readFileSync(f, 'utf8')).join('\n');
 const usedSkills = new Set();
 for (const m of allText.matchAll(/(?:code:\s*|code=")([A-Za-z0-9+/]{10,})/g)) {
   try { SkillTemplate.fromTemplate(m[1]).skills.forEach((s) => usedSkills.add(s)); } catch {}
@@ -99,7 +147,7 @@ for (const n of parse(readFileSync('src/content/skill-nicknames.yaml', 'utf8')) 
   if (!usedSkills.has(n.skill)) err('src/content/skill-nicknames.yaml', `nickname "${n.nickname}" for unused skill ${n.skill}`);
 
 // 8. Block syntax (Storage mapping): self-closing, one per line, string attributes, no imports, no wrappers.
-const BLOCKS = 'SkillBar|BuildBar|GearCard|DutyBadge|Loop|YouTube|GearIndex|ConsumableIndex|BuildIndex';
+const BLOCKS = 'SkillBar|BuildBar|GearCard|DutyBadge|Loop|YouTube|BuildIndex';
 const ALLOW_IMPORTS = new Set(['index']); // home page uses Starlight's hero and card grid
 for (const f of files) {
   const { body } = split(f);

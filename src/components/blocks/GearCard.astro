@@ -1,17 +1,8 @@
 ---
-/** Gear block: references an existing Gear entry (no ad-hoc gear). */
-import { entity, gameName, urlOf } from '../../lib/kb';
-import { langFromLocals } from '../../lib/ui';
+/** Gear block: references a Gear catalog entry (src/content/gear), e.g. `runes/rune-of-superior-vigor`. Links to the Guild Wars Wiki. */
+import GearChip from '../gear/GearChip.astro';
 
 interface Props { gear: string }
-const lang = langFromLocals(Astro.locals);
-const g = await entity(Astro.props.gear, 'gear');
-if (!g) throw new Error(`GearCard: no Gear "${Astro.props.gear}"`);
-const name = await gameName(g, lang);
 ---
 
-<a class="gw-gear" href={urlOf(g.id, lang)}>{name}</a>
-
-<style>
-  .gw-gear { display: inline-block; padding: 0.1rem 0.5rem; border: 1px solid var(--sl-color-accent); border-radius: 0.3rem; text-decoration: none; font-size: var(--sl-text-sm); }
-</style>
+<GearChip gear={Astro.props.gear} variant="pill" />

@@ -1,0 +1,116 @@
+/*
+ * Layer 1 — primitive tokens (docs/design-system.md § Layers).
+ * Raw values only: palettes, type, space, radii, motion. Nothing here knows what it is used for.
+ * This is the ONLY file allowed to contain color literals (`npm run check:styles` enforces it).
+ * Components never read these directly; they read the semantic tokens in theme.css.
+ *
+ * Palette: grays with a touch of teal (hue ≈ 185), a teal accent, and four pairings —
+ * green, blue, cherry, orange — for tones (success, info, danger, warning).
+ */
+:root {
+  /* ---- Teal-gray neutrals ---- */
+  --gw-gray-1000: #070a0b;
+  --gw-gray-950: #0c1112;
+  --gw-gray-900: #111819;
+  --gw-gray-850: #162021;
+  --gw-gray-800: #1c2829;
+  --gw-gray-700: #283637;
+  --gw-gray-600: #394a4b;
+  --gw-gray-500: #566a6b;
+  --gw-gray-400: #7d9192;
+  --gw-gray-300: #a5b5b5;
+  --gw-gray-200: #c8d3d2;
+  --gw-gray-100: #e3eae9;
+  --gw-gray-50: #f2f5f4;
+  --gw-gray-0: #fafcfb;
+
+  /* ---- Teal (accent) ---- */
+  --gw-teal-200: #a9e7de;
+  --gw-teal-300: #72d2c4;
+  --gw-teal-400: #3fbcac;
+  --gw-teal-500: #22a294;
+  --gw-teal-600: #178378;
+  --gw-teal-700: #136a62;
+  --gw-teal-800: #104e49;
+  --gw-teal-900: #0c3532;
+
+  /* ---- Pairings ---- */
+  --gw-green-300: #96d69c;
+  --gw-green-500: #46a453;
+  --gw-green-800: #1b4223;
+  --gw-blue-300: #9dbdf0;
+  --gw-blue-500: #4a86d9;
+  --gw-blue-800: #1a3456;
+  --gw-cherry-300: #f08ea0;
+  --gw-cherry-500: #c9334f;
+  --gw-cherry-800: #4b1220;
+  --gw-orange-300: #f5b56e;
+  --gw-orange-500: #df7c26;
+  --gw-orange-800: #4c2a0d;
+
+  --gw-white: #ffffff;
+  --gw-black: #000000;
+
+  /* ---- Type ---- */
+  --gw-font-display: 'Cinzel Variable', 'Cinzel', Georgia, 'Times New Roman', serif;
+  --gw-font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif;
+  --gw-font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+
+  --gw-weight-regular: 400;
+  --gw-weight-semibold: 600;
+  --gw-weight-bold: 700;
+  --gw-weight-black: 800;
+
+  --gw-tracking-tight: 0.02em;
+  --gw-tracking-wide: 0.06em;
+  --gw-tracking-wider: 0.12em;
+  --gw-tracking-widest: 0.24em;
+
+  --gw-text-3xs: 0.6875rem; /* 11 */
+  --gw-text-2xs: 0.75rem; /* 12 */
+  --gw-text-xs: 0.8125rem; /* 13 */
+  --gw-text-sm: 0.875rem; /* 14 */
+  --gw-text-md: 1rem; /* 16 */
+  --gw-text-lg: 1.125rem; /* 18 */
+  --gw-text-xl: 1.375rem; /* 22 */
+  --gw-text-2xl: 1.75rem; /* 28 */
+  --gw-text-3xl: 2.25rem; /* 36 */
+  --gw-text-4xl: 3rem; /* 48 */
+
+  /* ---- Space (4px grid) ---- */
+  --gw-space-0: 0;
+  --gw-space-1: 0.25rem;
+  --gw-space-2: 0.5rem;
+  --gw-space-3: 0.75rem;
+  --gw-space-4: 1rem;
+  --gw-space-5: 1.5rem;
+  --gw-space-6: 2rem;
+  --gw-space-7: 3rem;
+
+  /* ---- Radii (frames are near-square, like the game's UI) ---- */
+  --gw-radius-sm: 2px;
+  --gw-radius-md: 3px;
+  --gw-radius-lg: 4px;
+  --gw-radius-pill: 999px;
+
+  /* ---- Icon sizes (game icons are 64×64 at source) ---- */
+  --gw-icon-xs: 1.5rem;
+  --gw-icon-sm: 2rem;
+  --gw-icon-md: 3rem;
+  --gw-icon-lg: 4rem;
+
+  /* ---- Ornaments (SVG masks, tinted with the --gw-ornament tokens) ---- */
+  --gw-ornament-corner-size: 22px;
+
+  /* ---- Motion ---- */
+  --gw-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --gw-duration-fast: 120ms;
+  --gw-duration-base: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --gw-duration-fast: 0ms;
+    --gw-duration-base: 0ms;
+  }
+}

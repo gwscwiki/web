@@ -1,0 +1,8 @@
+name:
+  fr: Javelot de silence
+  en: Silencing spear
+weapons:
+  - weapons/silencing-spear
+note:
+  fr: Arme de lanceur 20 % enchantements, +5 énergie. Le préfixe de silence aide si on prend Technobabble.
+  en: Caster weapon, 20% enchantments, +5 energy. The Silencing prefix helps if you bring Technobabble.

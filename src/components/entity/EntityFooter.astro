@@ -1,0 +1,86 @@
+---
+/**
+ * Generated part of an entity page rendered *after* the prose (MarkdownContent override).
+ * Counterpart of EntityPanel, which renders above it. Reads shared data from the French twin.
+ * Duty: who carries it, per Strategy. Any entity: the credit for its sources, last.
+ */
+import { List, Panel } from '../ui';
+import DutyMatrix, { type Cell } from './DutyMatrix.astro';
+import { getShared, refId, rolesByDuty, titleOf, urlOf, zoneOf, type Entity } from '../../lib/kb';
+import { langFromLocals, t } from '../../lib/ui';
+
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const route = Astro.locals.starlightRoute;
+const shared = route.entry ? await getShared(route.entry.id) : undefined;
+const kind = shared?.data.kind;
+const L = async (id: string) => ({ href: urlOf(id, lang), text: await titleOf(id, lang) });
+const fmtDate = (d: Date) => d.toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'en-GB', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
+const sources: { title: string; url: string; site?: string; author?: string; edited?: Date }[] =
+  (shared?.data as { sources?: [] } | undefined)?.sources ?? [];
+
+let p: Record<string, any> = {};
+
+if (kind === 'duty') {
+  const d = shared as unknown as Entity<'duty'>;
+  const zone = await zoneOf(d.id);
+  p.zone = zone && (await L(zone.id));
+  // Role × Strategy grid: every Strategy of the Zone as a column, every Role carrying this Duty
+  // somewhere as a row (in the Zone's role order).
+  const bySetup = await rolesByDuty(d.id);
+  const carriers = new Set(bySetup.flatMap((s) => s.rows.map((r) => refId(r.role))));
+  const order = zone?.data.roles.map(refId) ?? [];
+  const rank = (id: string) => (order.indexOf(id) + 1 || order.length + 1);
+  p.strategies = await Promise.all(
+    bySetup.map(async (s) => ({ href: urlOf(s.strategy.id, lang), text: s.strategy.data.label, isDefault: s.strategy.data.default, carried: s.rows.length > 0 })),
+  );
+  p.rows = await Promise.all(
+    [...carriers].sort((a, b) => rank(a) - rank(b)).map(async (id) => ({
+      role: await L(id),
+      cells: bySetup.map((s): Cell =>
+        s.rows.some((r) => refId(r.role) === id) ? 'carries' : s.strategy.data.roles.some((r) => refId(r.role) === id) ? 'present' : 'absent',
+      ),
+    })),
+  );
+}
+---
+
+{
+  (kind === 'duty' || sources.length > 0) && (
+    <div class="gw-entity-foot not-content">
+      {kind === 'duty' && (
+        <Panel kicker={p.zone ? p.zone.text : undefined} title={_('carriedBy')}>
+          {p.zone && <a slot="actions" href={p.zone.href}>{_('zone')} →</a>}
+          {p.rows.length === 0 ? (
+            <p class="gw-muted">{_('inNoStrategy')}</p>
+          ) : (
+            <DutyMatrix strategies={p.strategies} rows={p.rows} />
+          )}
+        </Panel>
+      )}
+      {sources.length > 0 && (
+        <Panel tone="info" kicker={_('source')}>
+          <p class="gw-entity-foot__credit">{_('creditIntro')}</p>
+          <List tone="info">
+            {sources.map((s) => (
+              <li>
+                <a href={s.url} rel="noopener" target="_blank">{s.title}</a>
+                {s.site && <span class="gw-muted"> · {s.site}</span>}
+                {s.author && <span> · {_('by')} {s.author}</span>}
+                {s.edited && <span class="gw-muted"> · {_('editedOn')} {fmtDate(s.edited)}</span>}
+              </li>
+            ))}
+          </List>
+        </Panel>
+      )}
+    </div>
+  )
+}
+
+<style>
+  .gw-entity-foot { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--gw-space-4); margin-top: var(--gw-space-6); }
+  .gw-entity-foot a { color: var(--gw-accent-text); text-decoration: none; }
+  .gw-entity-foot a:hover { color: var(--gw-accent-strong); text-decoration: underline; }
+  .gw-entity-foot__credit { margin: 0 0 var(--gw-space-2); }
+</style>

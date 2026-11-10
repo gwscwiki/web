@@ -1,0 +1,91 @@
+---
+/**
+ * GameIcon — a framed game icon (skill, weapon, rune, insignia, consumable).
+ * Pass the image from `iconFor()` (src/lib/gw/icons.ts); when it's missing, a lettered
+ * placeholder tile is drawn from `label`, so pages never break on a missing icon.
+ *
+ *   <GameIcon src={iconFor('skill', 1759)} label="Vow of Strength" size="md" elite />
+ */
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import type { Size, Tone } from './types';
+
+interface Props {
+  src?: ImageMetadata;
+  /** Accessible name and placeholder initials source. */
+  label: string;
+  size?: Size;
+  /** Gold frame, as elite skills have in game. */
+  elite?: boolean;
+  /** Colored ring to call out a slot (e.g. swapped skill). */
+  ring?: Tone;
+  /** Hide from assistive tech when a visible name sits next to it. */
+  decorative?: boolean;
+  /** Empty slot: dashed outline, no content. */
+  empty?: boolean;
+  class?: string;
+}
+const { src, label, size = 'md', elite = false, ring, decorative = false, empty = false, class: cls } = Astro.props;
+// Render at 2× for sharp icons on high-DPI screens, capped at the 64 px source size.
+const px2 = Math.min(64, { xs: 24, sm: 32, md: 48, lg: 64 }[size] * 2);
+const initials =
+  label
+    .split(/[^\p{L}]+/u)
+    .filter((w) => w.length > 2)
+    .map((w) => w[0].toUpperCase())
+    .join('')
+    .slice(0, 3) || label.slice(0, 2).toUpperCase();
+---
+
+<span
+  class:list={['gw-icon', `gw-icon--${size}`, elite && 'gw-icon--elite', ring && `gw-icon--ring-${ring}`, empty && 'gw-icon--empty', cls]}
+  role={decorative || empty ? undefined : 'img'}
+  aria-label={decorative || empty ? undefined : label}
+  aria-hidden={decorative || empty ? 'true' : undefined}
+>
+  {!empty && (src ? <Image src={src} alt="" width={px2} height={px2} /> : <span class="gw-icon__ph">{initials}</span>)}
+</span>
+
+<style>
+  .gw-icon {
+    --_size: var(--gw-icon-md);
+    --_ring: var(--gw-border-strong);
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: var(--_size);
+    height: var(--_size);
+    border-radius: var(--gw-radius-sm);
+    background: var(--gw-surface-inset);
+    box-shadow: 0 0 0 1px var(--_ring), 0 4px 12px var(--gw-bg-deep);
+    overflow: hidden;
+    vertical-align: middle;
+  }
+  .gw-icon--xs { --_size: var(--gw-icon-xs); border-radius: 0.25rem; }
+  .gw-icon--sm { --_size: var(--gw-icon-sm); }
+  .gw-icon--lg { --_size: var(--gw-icon-lg); }
+  .gw-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+  .gw-icon__ph {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    background: var(--gw-surface-3);
+    color: var(--gw-text-muted);
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: calc(var(--_size) * 0.26);
+    letter-spacing: var(--gw-tracking-tight);
+  }
+
+  .gw-icon--elite { --_ring: var(--gw-elite); box-shadow: 0 0 0 2px var(--_ring), var(--gw-glow-elite); }
+  .gw-icon--ring-accent { --_ring: var(--gw-accent); box-shadow: 0 0 0 2px var(--_ring); }
+  .gw-icon--ring-info { --_ring: var(--gw-tone-info-fg); box-shadow: 0 0 0 2px var(--_ring); }
+  .gw-icon--ring-success { --_ring: var(--gw-tone-success-fg); box-shadow: 0 0 0 2px var(--_ring); }
+  .gw-icon--ring-warning { --_ring: var(--gw-tone-warning-fg); box-shadow: 0 0 0 2px var(--_ring); }
+  .gw-icon--ring-danger { --_ring: var(--gw-tone-danger-fg); box-shadow: 0 0 0 2px var(--_ring); }
+
+  .gw-icon--empty { background: transparent; box-shadow: none; outline: 1px dashed var(--gw-border-strong); outline-offset: -1px; }
+</style>

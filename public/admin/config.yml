@@ -34,14 +34,16 @@ x-tr: &tr # a translated string inside shared data: { fr, en }
   fields:
     - { name: fr, label: Français, widget: text }
     - { name: en, label: English, widget: text, required: false }
-x-requirements: &requirements
+x-level: &level { name: level, label: Niveau, widget: select, options: [required, recommended, optional] }
+x-duties: &duties { name: duties, label: Duties, widget: relation, collection: fow-duties, value_field: 'fow/duties/{{slug}}', display_fields: [label], multiple: true, required: false }
+x-requirements: &requirements # Consumables only (ADR 0003)
   name: requirements
   label: Exigences
   widget: list
   i18n: false
   required: false
   fields:
-    - { name: level, label: Niveau, widget: select, options: [required, recommended, optional] }
+    - *level
     - name: target
       label: Cible
       widget: object
@@ -53,48 +55,72 @@ x-requirements: &requirements
         - name: role
           label: Rôle
           fields: [{ name: role, widget: relation, collection: fow-roles, value_field: 'fow/roles/{{slug}}', display_fields: [label] }]
+        - name: strategy
+          label: Stratégie
+          fields: [{ name: strategy, widget: relation, collection: fow-strategies, value_field: 'fow/strategies/{{slug}}', display_fields: [label] }]
         - name: zone
           label: Zone
           fields: [{ name: zone, widget: relation, collection: zones, value_field: '{{slug}}', display_fields: [title] }]
-    - { <<: *tr, name: reason, label: Raison }
-x-armor: &armor
-  widget: object
-  required: false
-  fields:
-    - { name: insignia, label: Insigne, widget: relation, collection: gear-insignias, value_field: 'gear/insignias/{{slug}}', required: false }
-    - { name: rune, label: Rune, widget: relation, collection: gear-runes, value_field: 'gear/runes/{{slug}}', required: false }
+    - { name: reason, label: Raison, widget: object, i18n: false, required: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
+# Base Loadout: one armor set, the weapon sets carried. A Build's armor replaces its core's; weapon sets add up.
 x-loadout: &loadout
   name: loadout
-  label: Équipement porté
+  label: Équipement de base
   widget: object
   i18n: false
   required: false
   fields:
-    - name: weaponSets
-      label: Sets d'armes
-      widget: list
-      required: false
-      fields:
-        - { name: id, widget: string }
-        - { name: weapons, widget: relation, collection: gear-weapons, value_field: 'gear/weapons/{{slug}}', multiple: true }
-    - name: armor
-      label: Armure
-      widget: object
-      required: false
-      fields:
-        - { <<: *armor, name: head, label: Tête, fields: [{ name: insignia, label: Insigne, widget: relation, collection: gear-insignias, value_field: 'gear/insignias/{{slug}}', required: false }, { name: rune, label: Rune, widget: relation, collection: gear-runes, value_field: 'gear/runes/{{slug}}', required: false }, { name: attribute, label: Attribut (ID), widget: number, value_type: int, required: false }] }
-        - { <<: *armor, name: chest, label: Torse }
-        - { <<: *armor, name: hands, label: Mains }
-        - { <<: *armor, name: legs, label: Jambes }
-        - { <<: *armor, name: feet, label: Pieds }
+    - { name: armor, label: Armure de base, widget: relation, collection: armor-sets, value_field: 'armor/{{slug}}', display_fields: [name.fr], required: false }
+    - { name: weapons, label: Sets d'armes, widget: relation, collection: weapon-sets, value_field: 'weapons/{{slug}}', display_fields: [name.fr], multiple: true, required: false }
+# Gear sets bound to the core/Build by Duty (none = always), with a level.
+x-gear: &gear
+  name: gear
+  label: Sets par duty
+  widget: list
+  i18n: false
+  required: false
+  fields:
+    - name: set
+      label: Set
+      widget: relation
+      collection: all-gear-sets
+      value_field: '{{dirname}}/{{slug}}' # TODO verify: armor/<slug> or weapons/<slug>
+      display_fields: [name.fr]
+    - *level
+    - { <<: *duties, label: "Duties (vide = toujours)" }
+    - { name: reason, label: Raison, widget: object, i18n: false, required: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
+# Where an entity's content comes from, credited at the foot of its page.
+x-sources: &sources
+  name: sources
+  label: Sources (crédit)
+  widget: list
+  i18n: false
+  required: false
+  fields:
+    - { name: title, label: Titre de la page, widget: string }
+    - { name: url, widget: string }
+    - { name: site, widget: string, required: false }
+    - { name: author, label: Auteur, widget: string, required: false }
+    - { name: edited, label: Modifiée le, widget: datetime, time_format: false, format: YYYY-MM-DD, required: false }
+x-piece: &piece
+  widget: object
+  required: false
+  fields:
+    - { name: insignia, label: Insigne, widget: relation, collection: gear-insignias, value_field: 'insignias/{{slug}}', required: false }
+    - { name: rune, label: Rune, widget: relation, collection: gear-runes, value_field: 'runes/{{slug}}', required: false }
+    - { name: attribute, label: "Attribut du casque (ID)", widget: number, value_type: int, required: false }
 x-mdx: &mdx
   extension: mdx
   format: frontmatter
   create: true
   i18n: true
+x-data: &data # YAML data without pages, French-only text in { fr, en } fields
+  extension: yaml
+  format: yaml
+  create: true
 
 collections:
-  # ------------------------------------------------------------ Zones and their Roles / Duties
+  # ------------------------------------------------------------ Zones, Strategies, Roles, Duties
   - <<: *mdx
     name: zones
     label: Zones
@@ -115,10 +141,35 @@ collections:
         fields:
           - { name: id, widget: string }
           - { name: youtube, label: ID YouTube, widget: string }
-          - { name: setup, widget: relation, collection: party-setups, display_fields: [label] }
+          - { name: strategy, label: Stratégie, widget: relation, collection: fow-strategies, value_field: 'fow/strategies/{{slug}}', display_fields: [label] }
           - { name: date, widget: datetime, time_format: false, format: YYYY-MM-DD }
           - { name: runner, widget: string }
           - { name: lang, widget: select, options: [fr, en, none] }
+      - *sources
+      - *body
+  - <<: *mdx
+    name: fow-strategies
+    label: FoW — Stratégies
+    folder: src/content/docs/{{locale}}/fow/strategies
+    identifier_field: label
+    fields:
+      - *title
+      - *description
+      - { name: kind, widget: hidden, default: strategy, i18n: false }
+      - { name: label, widget: string, i18n: false }
+      - { name: default, label: Stratégie par défaut de la zone, widget: boolean, default: false, i18n: false }
+      - { name: time, label: "Temps visé (ex. ~7 min)", widget: string, required: false, i18n: false }
+      - name: roles
+        label: Composition
+        widget: list
+        i18n: false
+        fields:
+          - { name: role, label: Rôle, widget: relation, collection: fow-roles, value_field: 'fow/roles/{{slug}}', display_fields: [label] }
+          - { name: build, label: Build, widget: relation, collection: all-builds, value_field: 'builds/{{dirname}}/{{slug}}', required: false } # TODO verify dirname
+          - { <<: *duties, label: "Duties (ordre de la route)" }
+          - { name: route, label: Route d'origine (verbatim), widget: string, required: false }
+          - { name: note, label: Note, widget: object, i18n: false, required: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
+      - *sources
       - *body
   - <<: *mdx
     name: fow-roles
@@ -130,7 +181,7 @@ collections:
       - *description
       - { name: kind, widget: hidden, default: role, i18n: false }
       - { name: label, widget: string, i18n: false }
-      - { name: build, widget: relation, collection: vos-builds, value_field: 'builds/vos/{{slug}}', i18n: false }
+      - *sources
       - *body
   - <<: *mdx
     name: fow-duties
@@ -150,6 +201,7 @@ collections:
         fields:
           - { name: id, label: ID du run (Zone), widget: string }
           - { name: at, label: "Horodatage (m:ss)", widget: string, pattern: ['^\d+(:\d{2}){1,2}$', 'm:ss ou h:mm:ss'] }
+      - *sources
       - *body
 
   # ------------------------------------------------------------ Build cores and Builds
@@ -166,8 +218,11 @@ collections:
       - { name: label, widget: string, i18n: false }
       - { name: code, label: Code du template (cases libres vides), widget: string, i18n: false }
       - *loadout
+      - *gear
+      - *sources
       - *body
-  - <<: *mdx
+  - &builds
+    <<: *mdx
     name: vos-builds
     label: Builds VoS
     folder: src/content/docs/{{locale}}/builds/vos
@@ -176,9 +231,10 @@ collections:
       - *title
       - *description
       - { name: kind, widget: hidden, default: build, i18n: false }
-      - { name: core, widget: hidden, default: builds/vos, i18n: false }
+      - { name: core, label: Core, widget: relation, collection: cores, value_field: 'builds/{{slug}}', display_fields: [label], i18n: false }
       - { name: code, label: Code du template (testé en jeu), widget: string, i18n: false }
       - *loadout
+      - *gear
       - name: skillNotes
         label: Notes par compétence
         widget: list
@@ -186,82 +242,103 @@ collections:
         required: false
         fields:
           - { name: skill, label: ID de compétence, widget: number, value_type: int }
-          - { <<: *tr, name: note, label: Note }
+          - { name: note, label: Note, widget: object, i18n: false, required: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
           - name: alternatives
             widget: list
             required: false
             fields:
               - { name: skill, label: ID de compétence, widget: number, value_type: int }
-              - { <<: *tr, name: note, label: Note }
+              - { name: note, label: Note, widget: object, i18n: false, required: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
+      - *sources
       - *body
+  # One collection per core folder, same fields.
+  - { <<: *builds, name: sf-ranger-builds, label: Builds SF rôdeur, folder: 'src/content/docs/{{locale}}/builds/sf-ranger' }
+  - { <<: *builds, name: sf-assassin-builds, label: Builds SF assassin, folder: 'src/content/docs/{{locale}}/builds/sf-assassin' }
+  - { <<: *builds, name: ua-builds, label: Builds UA, folder: 'src/content/docs/{{locale}}/builds/ua' }
+  # Read-only picker over every Build, for the Strategy composition.
+  - <<: *mdx
+    name: all-builds
+    label: Tous les builds (sélection)
+    folder: src/content/docs/{{locale}}/builds
+    path: '{{dirname}}/{{slug}}' # TODO verify nested folder support
+    filter: { field: kind, value: build }
+    create: false
+    fields: [*title]
 
-  # ------------------------------------------------------------ Gear (type = folder)
-  - &gear
-    <<: *mdx
+  # ------------------------------------------------------------ Gear catalog (no pages; type = folder)
+  - &gearData
+    <<: *data
     name: gear-runes
     label: Équipement — Runes
-    folder: src/content/docs/{{locale}}/gear/runes
+    folder: src/content/gear/runes
     fields:
-      - *title
-      - *description
-      - { name: kind, widget: hidden, default: gear, i18n: false }
-      - { name: modId, label: ID du mod (build-wars), widget: number, value_type: int, i18n: false }
-      - *requirements
-      - *body
-  - <<: *gear
-    name: gear-insignias
-    label: Équipement — Insignes
-    folder: src/content/docs/{{locale}}/gear/insignias
-  - <<: *mdx
+      - { name: modId, label: ID du mod (build-wars), widget: number, value_type: int }
+      - { name: wiki, label: Titre de la page GWW (si différent du nom), widget: string, required: false }
+  - { <<: *gearData, name: gear-insignias, label: Équipement — Insignes, folder: src/content/gear/insignias }
+  - <<: *data
     name: gear-weapons
     label: Équipement — Armes
-    folder: src/content/docs/{{locale}}/gear/weapons
+    folder: src/content/gear/weapons
     fields:
-      - *title
-      - *description
-      - { name: kind, widget: hidden, default: gear, i18n: false }
-      - { name: base, label: ID de l'arme de base (build-wars), widget: number, value_type: int, required: false, i18n: false }
-      - { name: mods, label: IDs des mods, widget: list, field: { name: mod, widget: number, value_type: int }, required: false, i18n: false }
-      - { name: gwwTitle, label: Titre GWW (objet PvE nommé), widget: string, required: false, i18n: false }
-      - *requirements
-      - *body
+      - { name: base, label: ID de l'arme de base (build-wars), widget: number, value_type: int, required: false }
+      - { name: mods, label: IDs des mods, widget: list, field: { name: mod, widget: number, value_type: int }, required: false }
+      - { name: name, label: "Nom (si les données du jeu ne suffisent pas)", widget: object, i18n: false, required: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
+      - { name: wiki, label: Titre de la page GWW, widget: string, required: false }
 
-  # ------------------------------------------------------------ Consumables (kind = folder)
+  # ------------------------------------------------------------ Gear sets (no pages)
+  - <<: *data
+    name: armor-sets
+    label: Sets d'armure
+    folder: src/content/gear-sets/armor
+    identifier_field: name.fr
+    fields:
+      - { name: name, label: Nom, required: true, widget: object, i18n: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
+      - name: pieces
+        label: "Pièces (seulement celles que le set remplace)"
+        widget: object
+        fields:
+          - { <<: *piece, name: head, label: Tête }
+          - { <<: *piece, name: chest, label: Torse }
+          - { <<: *piece, name: hands, label: Mains }
+          - { <<: *piece, name: legs, label: Jambes }
+          - { <<: *piece, name: feet, label: Pieds }
+      - { name: note, label: Note, widget: object, i18n: false, required: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
+  - <<: *data
+    name: weapon-sets
+    label: Sets d'armes
+    folder: src/content/gear-sets/weapons
+    identifier_field: name.fr
+    fields:
+      - { name: name, label: Nom, required: true, widget: object, i18n: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
+      - { name: weapons, label: Armes, widget: relation, collection: gear-weapons, value_field: 'weapons/{{slug}}', multiple: true }
+      - { name: note, label: Note, widget: object, i18n: false, required: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }
+  # Read-only picker over both kinds of set, for Gear needs.
+  - <<: *data
+    name: all-gear-sets
+    label: Tous les sets (sélection)
+    folder: src/content/gear-sets
+    path: '{{dirname}}/{{slug}}' # TODO verify nested folder support
+    create: false
+    identifier_field: name.fr
+    fields: [{ name: name, label: Nom, required: true, widget: object, i18n: false, fields: [{ name: fr, label: Français, widget: text }, { name: en, label: English, widget: text, required: false }] }]
+
+  # ------------------------------------------------------------ Consumables (no pages; kind = folder)
   - &consumable
-    <<: *mdx
+    <<: *data
     name: consumables-cons
     label: Consommables — Cons
-    folder: src/content/docs/{{locale}}/consumables/cons
+    folder: src/content/consumables/cons
+    identifier_field: gwwTitle
     fields:
-      - *title
-      - *description
-      - { name: kind, widget: hidden, default: consumable, i18n: false }
-      - { name: gwwTitle, label: Titre GWW (anglais), widget: string, i18n: false }
-      - { name: nameFr, label: Nom français (vérifié), widget: string, i18n: false }
+      - { name: gwwTitle, label: Titre GWW (anglais), widget: string }
+      - { name: nameFr, label: Nom français (vérifié en jeu), widget: string, required: false }
       - *requirements
-      - *body
-  - { <<: *consumable, name: consumables-summoning-stones, label: Consommables — Pierres d'invocation, folder: 'src/content/docs/{{locale}}/consumables/summoning-stones' }
-  - { <<: *consumable, name: consumables-powerstones, label: Consommables — Pierres de puissance, folder: 'src/content/docs/{{locale}}/consumables/powerstones' }
-  - { <<: *consumable, name: consumables-sweets-alcohol, label: Consommables — Sucreries / alcool, folder: 'src/content/docs/{{locale}}/consumables/sweets-alcohol' }
-  - { <<: *consumable, name: consumables-other, label: Consommables — Autre, folder: 'src/content/docs/{{locale}}/consumables/other' }
+  - { <<: *consumable, name: consumables-summoning-stones, label: Consommables — Pierres d'invocation, folder: src/content/consumables/summoning-stones }
+  - { <<: *consumable, name: consumables-powerstones, label: Consommables — Pierres de puissance, folder: src/content/consumables/powerstones }
+  - { <<: *consumable, name: consumables-sweets-alcohol, label: Consommables — Sucreries / alcool, folder: src/content/consumables/sweets-alcohol }
+  - { <<: *consumable, name: consumables-other, label: Consommables — Autre, folder: src/content/consumables/other }
 
-  # ------------------------------------------------------------ Data without pages
-  - name: party-setups
-    label: Party setups
-    folder: src/content/party-setups
-    extension: yaml
-    format: yaml
-    create: true
-    identifier_field: label
-    fields:
-      - { name: zone, widget: relation, collection: zones, display_fields: [title] }
-      - { name: label, widget: string }
-      - { name: default, label: Setup par défaut, widget: boolean, default: false }
-      - name: roles
-        widget: list
-        fields:
-          - { name: role, widget: relation, collection: fow-roles, value_field: 'fow/roles/{{slug}}', display_fields: [label] }
-          - { name: duties, widget: relation, collection: fow-duties, value_field: 'fow/duties/{{slug}}', display_fields: [label], multiple: true }
+  # ------------------------------------------------------------ Settings
   - name: settings
     label: Réglages
     files:

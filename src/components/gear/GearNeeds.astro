@@ -1,0 +1,103 @@
+---
+/**
+ * Gear needs: sets bound to a Build by Duty, with a level. Each row folds open on the set's content.
+ * `holder` on a need adds which core/Build it comes from (Duty pages).
+ */
+import { gearSet, setType, slotsOf, titleOf, tr, urlOf, ARMOR_SLOTS, type GearNeed } from '../../lib/kb';
+import { langFromLocals, t } from '../../lib/ui';
+import { Tag } from '../ui';
+import RequirementLevel from '../entity/RequirementLevel.astro';
+import GearSetView from './GearSetView.astro';
+
+interface Props {
+  needs: (GearNeed & { holder?: string })[];
+  /** Hide the Duty tags (e.g. on a Duty's own page). */
+  hideDuties?: boolean;
+}
+const { needs, hideDuties = false } = Astro.props;
+const lang = langFromLocals(Astro.locals);
+const _ = t(lang);
+const rows = await Promise.all(
+  needs.map(async (n) => {
+    const s = await gearSet(n.set);
+    const slots = slotsOf(s);
+    const cover =
+      setType(s.id) === 'weapons'
+        ? _('weaponSet')
+        : slots.length === ARMOR_SLOTS.length
+          ? _('fullArmor')
+          : `${_('armorPart')} · ${slots.map((k) => _(k).toLowerCase()).join(', ')}`;
+    return {
+      n,
+      name: tr(s.data.name, lang)!.text,
+      cover,
+      duties: await Promise.all(n.duties.map(async (d) => ({ href: urlOf(d, lang), text: await titleOf(d, lang) }))),
+      holder: n.holder ? { href: urlOf(n.holder, lang), text: await titleOf(n.holder, lang) } : undefined,
+      reason: tr(n.reason, lang),
+    };
+  }),
+);
+---
+
+{
+  rows.length === 0 ? (
+    <p class="gw-muted">{_('none')}</p>
+  ) : (
+    <ul class="gw-gearneeds">
+      {rows.map((r) => (
+        <li>
+          <details>
+            <summary>
+              <span class="gw-gearneeds__head">
+                <span class="gw-gearneeds__cover">{r.cover}</span>
+                <span class="gw-gearneeds__name">{r.name}</span>
+                {r.holder && <span class="gw-muted">· <a href={r.holder.href}>{r.holder.text}</a></span>}
+              </span>
+              <span class="gw-gearneeds__tags">
+                {!hideDuties && (r.duties.length ? r.duties.map((d) => <Tag href={d.href} tone="info" size="sm">{d.text}</Tag>) : <Tag size="sm">{_('always')}</Tag>)}
+                <RequirementLevel level={r.n.level} size="sm" />
+              </span>
+            </summary>
+            <div class="gw-gearneeds__body">
+              {r.reason && <p class="gw-gearneeds__reason">{r.reason.text}{r.reason.untranslated && <em> ({_('notTranslated')})</em>}</p>}
+              <GearSetView set={r.n.set} />
+            </div>
+          </details>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .gw-gearneeds { list-style: none; margin: 0; padding: 0; }
+  .gw-gearneeds > li { margin: 0; border-bottom: 1px solid var(--gw-divider); }
+  .gw-gearneeds > li:last-child { border-bottom: 0; }
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gw-space-2) var(--gw-space-3);
+    padding: var(--gw-space-2) 0;
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  .gw-gearneeds__head { flex: 1; min-width: 12rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--gw-space-2); }
+  .gw-gearneeds__head::before { content: '▸'; color: var(--gw-text-subtle); }
+  details[open] .gw-gearneeds__head::before { content: '▾'; }
+  .gw-gearneeds__cover {
+    font-family: var(--gw-font-display);
+    font-weight: var(--gw-weight-bold);
+    font-size: var(--gw-text-3xs);
+    letter-spacing: var(--gw-tracking-wider);
+    text-transform: uppercase;
+    color: var(--gw-text-subtle);
+  }
+  .gw-gearneeds__name { color: var(--gw-text-strong); font-weight: var(--gw-weight-semibold); }
+  .gw-gearneeds__head a { color: var(--gw-accent-text); text-decoration: none; }
+  .gw-gearneeds__tags { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--gw-space-1); }
+  .gw-gearneeds__body { padding: 0 0 var(--gw-space-3) var(--gw-space-4); display: grid; gap: var(--gw-space-2); }
+  .gw-gearneeds__reason { margin: 0; font-size: var(--gw-text-sm); color: var(--gw-text-muted); }
+</style>

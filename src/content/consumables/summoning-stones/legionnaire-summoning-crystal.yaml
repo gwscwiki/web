@@ -1,0 +1,6 @@
+gwwTitle: Legionnaire Summoning Crystal
+requirements:
+  - level: recommended
+    target:
+      type: strategy
+      strategy: fow/strategies/rollway

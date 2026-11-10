@@ -5,14 +5,12 @@
  */
 import type { Loader } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse as parseYaml } from 'yaml';
-import { BUILD_WARS_BASE, CACHE_DIR } from '../lib/gw/source';
-import { decodeBar } from '../lib/gw/templates';
-
-const CONTENT_DIR = 'src/content';
+import { BUILD_WARS_BASE, CACHE_DIR } from '../lib/gw/source.mjs';
+import { CONTENT_DIR, scanUsedIds } from '../lib/gw/used-ids.mjs';
 
 async function fetchJson(file: string): Promise<any> {
   const cached = join(CACHE_DIR, file);
@@ -23,46 +21,6 @@ async function fetchJson(file: string): Promise<any> {
   await mkdir(CACHE_DIR, { recursive: true });
   await writeFile(cached, text);
   return JSON.parse(text);
-}
-
-async function walk(dir: string): Promise<string[]> {
-  const out: string[] = [];
-  for (const e of await readdir(dir, { withFileTypes: true })) {
-    const p = join(dir, e.name);
-    if (e.isDirectory()) out.push(...(await walk(p)));
-    else if (/\.(mdx?|ya?ml)$/.test(e.name)) out.push(p);
-  }
-  return out;
-}
-
-export interface UsedIds { skills: Set<number>; mods: Set<number>; items: Set<number> }
-
-/** Scan all content for game IDs: template codes, `skill`, `modId`, `mods`, `base`, `<SkillBar code>`. */
-export async function scanUsedIds(): Promise<UsedIds> {
-  const used: UsedIds = { skills: new Set([0]), mods: new Set(), items: new Set() };
-  const addCode = (code: unknown) => {
-    if (typeof code !== 'string' || !code) return;
-    try { decodeBar(code).skills.forEach((s) => used.skills.add(s)); } catch { /* reported by content checks */ }
-  };
-  const visit = (v: unknown, key?: string): void => {
-    if (Array.isArray(v)) {
-      if (key === 'mods') v.forEach((m) => typeof m === 'number' && used.mods.add(m));
-      v.forEach((x) => visit(x));
-    } else if (v && typeof v === 'object') {
-      for (const [k, x] of Object.entries(v)) visit(x, k);
-    } else if (key === 'code') addCode(v);
-    else if (key === 'skill' && typeof v === 'number') used.skills.add(v);
-    else if (key === 'modId' && typeof v === 'number') used.mods.add(v);
-    else if (key === 'base' && typeof v === 'number') used.items.add(v);
-  };
-  for (const file of await walk(CONTENT_DIR)) {
-    const text = await readFile(file, 'utf8');
-    if (/\.ya?ml$/.test(file)) { visit(parseYaml(text)); continue; }
-    const fm = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-    if (fm) visit(parseYaml(fm[1]));
-    for (const m of text.matchAll(/<SkillBar\s+code="([^"]+)"/g)) addCode(m[1]);
-  }
-  return used;
 }
 
 const tr = z.object({ fr: z.string(), en: z.string() });

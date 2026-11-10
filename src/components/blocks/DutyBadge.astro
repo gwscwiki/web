@@ -1,7 +1,7 @@
 ---
-import { Badge } from '@astrojs/starlight/components';
 import { entity, urlOf } from '../../lib/kb';
 import { langFromLocals } from '../../lib/ui';
+import { Tag } from '../ui';
 
 interface Props { duty: string }
 const lang = langFromLocals(Astro.locals);
@@ -9,6 +9,4 @@ const d = await entity(Astro.props.duty, 'duty');
 if (!d) throw new Error(`DutyBadge: no Duty "${Astro.props.duty}"`);
 ---
 
-<a href={urlOf(d.id, lang)} class="gw-duty"><Badge text={d.data.label} variant="note" /></a>
-
-<style>.gw-duty { text-decoration: none; }</style>
+<Tag href={urlOf(d.id, lang)} tone="info" class="not-content">{d.data.label}</Tag>

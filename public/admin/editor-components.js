@@ -23,10 +23,10 @@ const components = [
     toPreview: ({ build }) => `[BuildBar ${build ?? ''}]`,
   },
   {
-    // Skeleton limitation: a relation targets one collection, so this block only offers runes.
+    // A relation targets one collection, so this block only offers runes (any gear id works in the text).
     id: 'gear-card',
     label: 'Équipement',
-    fields: [{ name: 'gear', label: 'Équipement', widget: 'relation', collection: 'gear-runes', value_field: 'gear/runes/{{slug}}' }],
+    fields: [{ name: 'gear', label: 'Équipement', widget: 'relation', collection: 'gear-runes', value_field: 'runes/{{slug}}' }],
     pattern: block('GearCard', ['gear']),
     fromBlock: (m) => ({ gear: m[1] }),
     toBlock: ({ gear }) => `<GearCard gear="${gear ?? ''}" />`,

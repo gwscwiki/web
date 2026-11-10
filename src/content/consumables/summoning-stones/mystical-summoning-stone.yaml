@@ -1,0 +1,9 @@
+gwwTitle: Mystical Summoning Stone
+requirements:
+  - level: optional
+    target:
+      type: strategy
+      strategy: fow/strategies/rollway
+    reason:
+      fr: Listée pour les VoS.
+      en: Listed for the VoS.

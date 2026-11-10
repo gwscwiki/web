@@ -1,0 +1,18 @@
+---
+kind: strategy
+title: 5-man (exemple)
+description: Stratégie d’exemple du prototype.
+label: 5-man
+default: true
+roles:
+  - role: fow/roles/v1
+    build: builds/vos/standard
+    duties:
+      - fow/duties/toc
+  - role: fow/roles/v3
+    build: builds/vos/iau
+    duties:
+      - fow/duties/griffs
+---
+
+Stratégie d’exemple du prototype, gardée comme stratégie par défaut tant que la vraie n’est pas écrite. Le run complet de la page Zone y est rattaché.

@@ -1,0 +1,10 @@
+gwwTitle: Grail of Might
+nameFr: Graal de puissance
+requirements:
+  - level: recommended
+    target:
+      type: strategy
+      strategy: fow/strategies/rollway
+    reason:
+      fr: Un conset (Essence, Graal, Armure) par run.
+      en: One conset (Essence, Grail, Armor) per run.

@@ -1,0 +1,387 @@
+/*
+ * Layer 3 — global styles (docs/design-system.md § Layers): page, typography,
+ * Starlight chrome (header, sidebar, titles, cards, pagination) and shared utilities.
+ * Semantic tokens only — no color literals, no primitive tokens. Flat: no gradients.
+ * Component-specific styles live in the component (src/components/ui, blocks, entity).
+ */
+
+/* ---------- Page ---------- */
+body {
+  background-color: var(--gw-bg);
+  color: var(--gw-text);
+}
+
+::selection {
+  background: var(--gw-accent-soft);
+  color: var(--gw-text-strong);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--gw-focus-ring);
+  border-radius: var(--gw-radius-sm);
+}
+
+/* ---------- Header ---------- */
+header.header {
+  border-bottom: 3px double var(--gw-border);
+}
+.site-title {
+  gap: var(--gw-space-3);
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-bold);
+  font-size: var(--gw-text-lg);
+  letter-spacing: var(--gw-tracking-wide);
+  color: var(--gw-text-strong);
+}
+.site-title img {
+  height: 2.25rem;
+  width: auto;
+}
+.site-title:hover {
+  color: var(--gw-accent-strong);
+}
+
+site-search > button {
+  border-radius: var(--gw-radius-md);
+  border-color: var(--gw-border);
+  background-color: var(--gw-surface-2);
+}
+site-search > button:hover {
+  border-color: var(--gw-border-accent);
+}
+
+/* ---------- Sidebar ----------
+ * Two tiers: top-level sections (display face, uppercase, diamond — teal for the section you are in,
+ * ruled apart) and everything nested (body face). The current page is marked by a diamond "bead"
+ * knotted on the tree rail and a neutral fill — no accent bar. Details come from src/lib/sidebar.mjs
+ * as data-* attributes: team size + run time on Strategies, a "(Strategy)" tag on Builds, a count on groups.
+ */
+:root {
+  --sl-sidebar-width: 21rem;
+}
+
+/* Top-level sections */
+.sidebar-content .top-level > li + li {
+  margin-top: var(--gw-space-3);
+  padding-top: var(--gw-space-3);
+  border-top: 1px solid var(--gw-divider);
+}
+.sidebar-content .large {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gw-space-2);
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-bold);
+  font-size: var(--gw-text-xs);
+  letter-spacing: var(--gw-tracking-wider);
+  text-transform: uppercase;
+  color: var(--gw-text-strong);
+}
+.sidebar-content a.large {
+  display: flex;
+}
+.sidebar-content .top-level > li > details > summary .large::before,
+.sidebar-content .top-level > li > a.large::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  flex: none;
+  background-color: var(--gw-ornament);
+  -webkit-mask: url(../assets/ornaments/diamond.svg) center / contain no-repeat;
+  mask: url(../assets/ornaments/diamond.svg) center / contain no-repeat;
+}
+.sidebar-content .top-level > li:has([aria-current='page']) > details > summary .large::before,
+.sidebar-content .top-level > li > a.large[aria-current='page']::before {
+  background-color: var(--gw-ornament-accent);
+}
+
+/* Nested group labels (Stratégies, Rôles, a Build core…) */
+.sidebar-content ul ul .large {
+  font-family: var(--gw-font-body);
+  font-weight: var(--gw-weight-semibold);
+  font-size: var(--gw-text-sm);
+  letter-spacing: normal;
+  text-transform: none;
+}
+.sidebar-content summary {
+  gap: var(--gw-space-2);
+  border-radius: var(--gw-radius-sm);
+}
+.sidebar-content summary:hover .large {
+  color: var(--gw-accent-strong);
+}
+.sidebar-content .group-label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+.sidebar-content .caret {
+  color: var(--gw-text-subtle);
+}
+.sidebar-content .sl-badge.gw-count {
+  margin-inline-start: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--gw-font-body);
+  font-size: var(--gw-text-2xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--gw-text-subtle);
+}
+
+/* Links */
+.sidebar-content a {
+  border-radius: var(--gw-radius-sm);
+  transition: background-color var(--gw-duration-fast) var(--gw-ease), color var(--gw-duration-fast) var(--gw-ease);
+}
+.sidebar-content a:hover {
+  background-color: var(--gw-surface-2);
+  color: var(--gw-text-strong);
+}
+.sidebar-content [aria-current='page'],
+.sidebar-content [aria-current='page']:hover,
+.sidebar-content [aria-current='page']:focus {
+  color: var(--gw-text-strong);
+  background-color: var(--gw-surface-3);
+}
+
+/* Tree rail and the current-page bead */
+.sidebar-content ul ul li {
+  position: relative;
+  border-inline-start-color: var(--gw-divider);
+}
+.sidebar-content ul ul li:has(> a)::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  inset-inline-start: -4px; /* centred on the 1px rail */
+  width: 7px;
+  height: 7px;
+  background-color: transparent;
+  box-shadow: 0 0 0 2px transparent;
+  transform: translateY(-50%) rotate(45deg) scale(0.6);
+  transition: background-color var(--gw-duration-fast) var(--gw-ease), transform var(--gw-duration-fast) var(--gw-ease);
+  pointer-events: none;
+}
+.sidebar-content ul ul li:has(> a:hover)::before {
+  background-color: var(--gw-ornament);
+  box-shadow: 0 0 0 2px var(--gw-bg);
+}
+.sidebar-content ul ul li:has(> [aria-current='page'])::before {
+  background-color: var(--gw-accent);
+  box-shadow: 0 0 0 2px var(--gw-bg);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+/* Strategy rows: [team size] label · run time */
+.sidebar-content a.gw-nav-strategy {
+  display: grid;
+  grid-template-columns: 1.375rem minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--gw-space-2);
+}
+.sidebar-content a.gw-nav-strategy::before {
+  content: attr(data-team);
+  display: grid;
+  place-items: center;
+  height: 1.25rem;
+  border: 1px solid var(--gw-divider);
+  border-radius: var(--gw-radius-sm);
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-bold);
+  font-size: var(--gw-text-2xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--gw-text-muted);
+}
+.sidebar-content a.gw-nav-strategy[aria-current='page']::before {
+  border-color: var(--gw-border-accent);
+  color: var(--gw-accent-strong);
+}
+.sidebar-content a.gw-nav-strategy[data-time]::after {
+  content: attr(data-time);
+  font-size: var(--gw-text-2xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--gw-text-subtle);
+}
+
+/* Build rows: label · strategy tag */
+.sidebar-content a.gw-nav-build[data-tag] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gw-space-2);
+}
+.sidebar-content a.gw-nav-build[data-tag]::after {
+  content: attr(data-tag);
+  flex: none;
+  padding: 0 0.4em;
+  border: 1px solid var(--gw-border);
+  border-radius: var(--gw-radius-sm);
+  font-size: var(--gw-text-3xs);
+  font-weight: var(--gw-weight-semibold);
+  letter-spacing: var(--gw-tracking-tight);
+  line-height: 1.5;
+  color: var(--gw-text-subtle);
+}
+.sidebar-content a.gw-nav-core {
+  color: var(--gw-text-muted);
+  font-style: italic;
+}
+
+/* ---------- Titles & prose ---------- */
+h1#_top {
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-bold);
+  font-size: clamp(var(--gw-text-2xl), 4vw, var(--gw-text-4xl));
+  letter-spacing: var(--gw-tracking-tight);
+  color: var(--gw-text-strong);
+}
+
+.sl-markdown-content :is(h2, h3, h4):not(:where(.not-content *)) {
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-bold);
+  color: var(--gw-text-strong);
+}
+.sl-markdown-content h2:not(:where(.not-content *)) {
+  display: flex;
+  align-items: center;
+  gap: var(--gw-space-3);
+  padding-bottom: var(--gw-space-2);
+  border-bottom: 1px solid var(--gw-border);
+  font-size: var(--gw-text-xl);
+  letter-spacing: var(--gw-tracking-wide);
+}
+.sl-markdown-content h2:not(:where(.not-content *))::before {
+  content: '';
+  width: 0.65em;
+  height: 0.65em;
+  flex: none;
+  background-color: var(--gw-ornament-accent);
+  -webkit-mask: url(../assets/ornaments/diamond.svg) center / contain no-repeat;
+  mask: url(../assets/ornaments/diamond.svg) center / contain no-repeat;
+}
+.sl-markdown-content h3:not(:where(.not-content *)) {
+  font-size: var(--gw-text-lg);
+}
+
+.sl-markdown-content a:not(:where(.not-content *)) {
+  color: var(--gw-accent-text);
+  text-decoration-color: var(--gw-border-accent);
+  text-underline-offset: 0.2em;
+}
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+  text-decoration-color: currentColor;
+}
+
+.sl-markdown-content :not(pre) > code {
+  border-radius: var(--gw-radius-sm);
+  padding: 0.1em 0.35em;
+}
+
+.sl-markdown-content table:not(:where(.not-content *)) {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--gw-border);
+  border-radius: var(--gw-radius-md);
+  overflow: hidden;
+}
+.sl-markdown-content :is(th, td):not(:where(.not-content *)) {
+  border-color: var(--gw-divider);
+}
+.sl-markdown-content th:not(:where(.not-content *)) {
+  background: var(--gw-surface-2);
+}
+
+.sl-markdown-content hr:not(:where(.not-content *)) {
+  border: 0;
+  border-top: 3px double var(--gw-border);
+}
+
+/* ---------- Starlight cards, pagination ---------- */
+.card {
+  border: 1px solid var(--gw-border) !important;
+  border-radius: var(--gw-radius-lg);
+  background: var(--gw-surface-1) !important;
+}
+.card:hover {
+  border-color: var(--gw-border-accent) !important;
+}
+.card .title {
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-bold);
+  color: var(--gw-text-strong);
+}
+
+.pagination-links > a {
+  border-radius: var(--gw-radius-lg);
+  border-color: var(--gw-border);
+  background: var(--gw-surface-1);
+  box-shadow: none;
+}
+.pagination-links > a:hover {
+  border-color: var(--gw-border-accent);
+}
+.pagination-links .link-title {
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-bold);
+  color: var(--gw-text-strong);
+}
+
+/* ---------- Shared utilities (prefer ui/ components) ---------- */
+.gw-kicker {
+  font-family: var(--gw-font-display);
+  font-weight: var(--gw-weight-bold);
+  font-size: var(--gw-text-2xs);
+  letter-spacing: var(--gw-tracking-widest);
+  text-transform: uppercase;
+  color: var(--gw-accent);
+}
+.gw-muted {
+  color: var(--gw-text-muted);
+}
+.gw-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Grid for <Tile> collections (Gear / Consumable indexes). */
+.gw-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: var(--gw-space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.gw-tiles > li {
+  margin: 0;
+}
+
+/* Grid for <WeaponSetCard>s (Loadouts, Gear needs). */
+.gw-weaponcards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: var(--gw-space-3);
+  align-items: start;
+}
+.gw-weaponcards > * {
+  margin: 0 !important; /* Starlight spaces markdown siblings; a grid owns its own gaps */
+}
+
+/* Grid for <PathCard> entries (home page). */
+.gw-paths {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: var(--gw-space-4);
+}
+.gw-paths > * {
+  margin: 0 !important; /* Starlight spaces markdown siblings; a grid owns its own gaps */
+}

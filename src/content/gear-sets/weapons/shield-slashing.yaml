@@ -1,0 +1,8 @@
+name:
+  fr: Bouclier contre le tranchant
+  en: Slashing shield
+weapons:
+  - weapons/shield-devotion-slashing
+note:
+  fr: Pour le pont complet (squelettes).
+  en: For the full bridge (skeletons).

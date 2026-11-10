@@ -8,34 +8,68 @@ import { itemsLoader, modsLoader, skillsLoader } from './loaders/gw-data';
 /** A translated string inside shared data (Storage mapping): French required, English optional. */
 const tr = z.object({ fr: z.string(), en: z.string().optional() });
 const doc = reference('docs');
+const level = z.enum(['required', 'recommended', 'optional']);
 
+/** How necessary a Consumable is, for a Zone, Strategy, Role or Duty. */
 const requirement = z.object({
-  level: z.enum(['required', 'recommended', 'optional']),
+  level,
   target: z.discriminatedUnion('type', [
     z.object({ type: z.literal('zone'), zone: doc }),
+    z.object({ type: z.literal('strategy'), strategy: doc }),
     z.object({ type: z.literal('role'), role: doc }),
     z.object({ type: z.literal('duty'), duty: doc }),
   ]),
   reason: tr.optional(),
 });
 
-const armorPiece = z.object({ insignia: doc.optional(), rune: doc.optional(), attribute: z.number().optional() });
+/** What a Build core or Build wears by default: one base armor set and the weapon sets it carries. */
 const loadout = z.object({
-  weaponSets: z.array(z.object({ id: z.string(), weapons: z.array(doc) })).optional(),
-  armor: z
-    .object({ head: armorPiece, chest: armorPiece, hands: armorPiece, legs: armorPiece, feet: armorPiece })
-    .partial()
-    .optional(),
+  armor: reference('gearSets').optional(),
+  weapons: z.array(reference('gearSets')).default([]),
 });
+
+/**
+ * A Gear set bound to a Build core or Build, with how necessary it is. `duties` empty = whatever the
+ * Build is doing; otherwise only while it carries one of those Duties. An armor set here is swapped
+ * over the base armor for the slots it covers.
+ */
+const gearNeed = z.object({
+  set: reference('gearSets'),
+  level,
+  duties: z.array(doc).default([]),
+  reason: tr.optional(),
+});
+
+/** A Role in a Strategy: which Build it runs and which Duties it carries, in route order. */
+const strategyRole = z.object({
+  role: doc,
+  /** Missing when the source publishes no bar for this Role. */
+  build: doc.optional(),
+  duties: z.array(doc).default([]),
+  /** The source's own route wording, verbatim (community English shorthand). */
+  route: z.string().optional(),
+  note: tr.optional(),
+});
+
+/** Where an entity's content comes from, for credit (shown at the foot of its page). */
+const source = z.object({
+  title: z.string(),
+  url: z.url(),
+  site: z.string().optional(),
+  author: z.string().optional(),
+  edited: z.coerce.date().optional(),
+});
+const sources = z.array(source).default([]);
 
 /**
  * Every entity with a page is docs MDX typed by `kind` (Storage mapping). Shared fields live only in
  * the French file; English twins have no `kind` and fall into the plain-page branch.
- * Gear type and Consumable kind come from the folder (Information architecture), not frontmatter.
+ * Gear, Gear sets and Consumables have no pages: they are data collections below.
  */
 const entity = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('zone'),
+    sources,
     roles: z.array(doc),
     duties: z.array(doc),
     runs: z
@@ -43,7 +77,7 @@ const entity = z.discriminatedUnion('kind', [
         z.object({
           id: z.string(),
           youtube: z.string(),
-          setup: reference('partySetups'),
+          strategy: doc,
           date: z.coerce.date(),
           runner: z.string(),
           lang: z.enum(['fr', 'en', 'none']),
@@ -51,18 +85,37 @@ const entity = z.discriminatedUnion('kind', [
       )
       .default([]),
   }),
-  z.object({ kind: z.literal('role'), label: z.string(), build: doc }),
+  z.object({
+    kind: z.literal('strategy'),
+    label: z.string(),
+    default: z.boolean().default(false),
+    /** Typical clear time, as the source gives it ("~7 min"). */
+    time: z.string().optional(),
+    roles: z.array(strategyRole),
+    sources,
+  }),
+  z.object({ kind: z.literal('role'), label: z.string(), sources }),
   z.object({
     kind: z.literal('duty'),
     label: z.string(),
+    sources,
     run: z.object({ id: z.string(), at: z.string().regex(/^\d+(:\d{2}){1,2}$/) }).optional(),
   }),
-  z.object({ kind: z.literal('core'), label: z.string(), code: z.string(), loadout: loadout.default({}) }),
+  z.object({
+    kind: z.literal('core'),
+    label: z.string(),
+    sources,
+    code: z.string(),
+    loadout: loadout.default({ weapons: [] }),
+    gear: z.array(gearNeed).default([]),
+  }),
   z.object({
     kind: z.literal('build'),
     core: doc,
+    sources,
     code: z.string(),
-    loadout: loadout.default({}),
+    loadout: loadout.partial().default({}),
+    gear: z.array(gearNeed).default([]),
     skillNotes: z
       .array(
         z.object({
@@ -73,34 +126,60 @@ const entity = z.discriminatedUnion('kind', [
       )
       .default([]),
   }),
-  z.object({
-    kind: z.literal('gear'),
-    modId: z.number().optional(),
-    base: z.number().optional(),
-    mods: z.array(z.number()).default([]),
-    gwwTitle: z.string().optional(),
-    requirements: z.array(requirement).default([]),
-  }),
-  z.object({
-    kind: z.literal('consumable'),
-    gwwTitle: z.string(),
-    nameFr: z.string(),
-    requirements: z.array(requirement).default([]),
-  }),
   z.object({ kind: z.undefined().optional() }),
 ]);
 
+/** One armor piece of an armor set. `attribute` = the headpiece's +1 attribute (game ID). */
+const piece = z.object({
+  insignia: reference('gear').optional(),
+  rune: reference('gear').optional(),
+  attribute: z.number().optional(),
+});
+
 export const collections = {
   docs: defineCollection({ loader: docsLoader(), schema: docsSchema({ extend: entity }) }),
-  partySetups: defineCollection({
-    loader: glob({ pattern: '*.yaml', base: 'src/content/party-setups' }),
+
+  /**
+   * Gear catalog, no pages (ADR 0003). Type = folder: weapons/, runes/, insignias/.
+   * Name and icon come from game data (`modId`, or `base` + `mods`); `name` covers pieces the data
+   * can't express (an unspecified shield). `wiki` overrides the Guild Wars Wiki page title.
+   */
+  gear: defineCollection({
+    loader: glob({ pattern: '**/*.yaml', base: 'src/content/gear' }),
     schema: z.object({
-      zone: doc,
-      label: z.string(),
-      default: z.boolean().default(false),
-      roles: z.array(z.object({ role: doc, duties: z.array(doc) })),
+      modId: z.number().optional(),
+      base: z.number().optional(),
+      mods: z.array(z.number()).default([]),
+      name: tr.optional(),
+      wiki: z.string().optional(),
     }),
   }),
+
+  /**
+   * Gear sets, no pages. Type = folder: armor/ (full or partial: a headpiece alone is an armor set)
+   * and weapons/ (what goes in one weapon-set slot: a two-hander, or main hand plus off-hand).
+   */
+  gearSets: defineCollection({
+    loader: glob({ pattern: '**/*.yaml', base: 'src/content/gear-sets' }),
+    schema: z.object({
+      name: tr,
+      pieces: z.object({ head: piece, chest: piece, hands: piece, legs: piece, feet: piece }).partial().optional(),
+      weapons: z.array(reference('gear')).optional(),
+      note: tr.optional(),
+    }),
+  }),
+
+  /** Consumables, no pages. Kind = folder: cons/, summoning-stones/, powerstones/, sweets-alcohol/, other/. */
+  consumables: defineCollection({
+    loader: glob({ pattern: '**/*.yaml', base: 'src/content/consumables' }),
+    schema: z.object({
+      gwwTitle: z.string(),
+      /** Verified in-game French name; English is shown until it's filled. */
+      nameFr: z.string().optional(),
+      requirements: z.array(requirement).default([]),
+    }),
+  }),
+
   skills: defineCollection({ loader: skillsLoader() }),
   mods: defineCollection({ loader: modsLoader() }),
   items: defineCollection({ loader: itemsLoader() }),

@@ -1,0 +1,6 @@
+name:
+  fr: Baguette + bouclier (passage arrière)
+  en: Wand + shield (backway)
+weapons:
+  - weapons/wand-of-quickening
+  - weapons/shield-valor-nothing-to-fear

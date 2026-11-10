@@ -6,11 +6,34 @@ hero:
   tagline: Builds, roles and duties for Guild Wars 1 speedclears. Unofficial fansite.
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { PathCard } from '../../../components/ui';
 
-<CardGrid>
-  <Card title="FoW" icon="star">[Fissure of Woe](/fow/): roles, duties and the default setup.</Card>
-  <Card title="Builds" icon="puzzle">[Cores and builds](/builds/) with their variants.</Card>
-  <Card title="Gear" icon="setting">[Gear index](/gear/), filterable by duty.</Card>
-  <Card title="Consumables" icon="rocket">[Consumables index](/consumables/).</Card>
-</CardGrid>
+<div class="gw-paths">
+<PathCard tag="Zone" title="FoW" kicker="Fissure of Woe" href="/fow/" cta="Open the zone">
+
+Strategies, roles and duties, in run order.
+
+- Tanks, VoS and UA
+- ToC, griffs and the rest of the run
+- What to bring for each role
+
+</PathCard>
+<PathCard tag="Builds" title="Builds" kicker="Cores and variants" href="/builds/" cta="See the builds" tone="info">
+
+Every build starts from a core and only changes a few slots.
+
+- VoS, SF ranger, SF assassin, UA
+- Swaps per role
+- Template codes to copy
+
+</PathCard>
+<PathCard tag="Strategies" title="Strategies" kicker="T2Way, roll-way, low man" href="/fow/strategies/rollway/" cta="See roll-way">
+
+From 8 players down to 2: the team, each role’s route and everything to bring.
+
+- T2Way, roll-way, TUF-way
+- Gear per role and per duty
+- From the Speedclear Wiki
+
+</PathCard>
+</div>

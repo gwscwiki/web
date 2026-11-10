@@ -6,3 +6,5 @@ dist/
 .claude/
 .astro-dev.log
 public/admin/sveltia-cms.js
+src/assets/icons/synced/
+.scratch/shots/

@@ -1,0 +1,22 @@
+name:
+  fr: VoS — Marche-vent
+  en: VoS — Windwalker
+pieces:
+  head:
+    insignia: insignias/windwalker-insignia
+    rune: runes/dervish-rune-of-superior-earth-prayers
+    attribute: 43
+  chest:
+    insignia: insignias/windwalker-insignia
+    rune: runes/rune-of-superior-vigor
+  hands:
+    insignia: insignias/windwalker-insignia
+    rune: runes/dervish-rune-of-minor-mysticism
+  legs:
+    insignia: insignias/windwalker-insignia
+    rune: runes/rune-of-vitae
+  feet:
+    insignia: insignias/windwalker-insignia
+note:
+  fr: La 4e rune peut être Vitae, Clarté ou Rétablissement. Le casque donne +1 en Prières de la Terre.
+  en: The fourth rune can be Vitae, Clarity or Restoration. The headpiece gives +1 Earth Prayers.

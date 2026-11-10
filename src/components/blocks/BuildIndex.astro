@@ -1,6 +1,7 @@
 ---
-import { buildsOfCore, entities, rolesRunning, titleOf, urlOf, zoneOf } from '../../lib/kb';
+import { buildsOfCore, entities, rolesRunning, titleOf, urlOf } from '../../lib/kb';
 import { langFromLocals, t } from '../../lib/ui';
+import { List, Panel, Tag } from '../ui';
 
 const lang = langFromLocals(Astro.locals);
 const _ = t(lang);
@@ -13,10 +14,10 @@ const cores = await Promise.all(
         href: urlOf(b.id, lang),
         title: await titleOf(b.id, lang),
         roles: await Promise.all(
-          (await rolesRunning(b.id)).map(async (r) => {
-            const z = await zoneOf(r.id);
-            return { href: urlOf(r.id, lang), title: `${z ? (await titleOf(z.id, lang)) + ' ' : ''}${await titleOf(r.id, lang)}` };
-          }),
+          (await rolesRunning(b.id)).map(async (x) => ({
+            href: urlOf(x.strategy.id, lang),
+            title: `${x.strategy.data.label} · ${await titleOf(x.row.role, lang)}`,
+          })),
         ),
       })),
     ),
@@ -24,18 +25,33 @@ const cores = await Promise.all(
 );
 ---
 
-{
-  cores.map((c) => (
-    <section>
-      <h2><a href={c.href}>{c.title}</a></h2>
-      <ul>
-        {c.builds.map((b) => (
-          <li>
-            <a href={b.href}>{b.title}</a>
-            {b.roles.length > 0 && <> — {_('runningRoles')} {b.roles.map((r, i) => <>{i > 0 && ', '}<a href={r.href}>{r.title}</a></>)}</>}
-          </li>
-        ))}
-      </ul>
-    </section>
-  ))
-}
+<div class="gw-builds not-content">
+  {
+    cores.map((c) => (
+      <Panel kicker={_('core')} title={c.title}>
+        <a slot="actions" href={c.href}>{_('open')} →</a>
+        <List>
+          {c.builds.map((b) => (
+            <li>
+              <a href={b.href}><strong>{b.title}</strong></a>
+              {b.roles.length > 0 && (
+                <span class="gw-builds__roles">
+                  <span class="gw-muted">{_('runningRoles')}</span>
+                  {b.roles.map((r) => <Tag href={r.href} tone="info" size="sm">{r.title}</Tag>)}
+                </span>
+              )}
+            </li>
+          ))}
+        </List>
+      </Panel>
+    ))
+  }
+</div>
+
+<style>
+  .gw-builds { display: grid; gap: var(--gw-space-4); }
+  .gw-builds a { color: var(--gw-accent-text); text-decoration: none; }
+  .gw-builds a:hover { color: var(--gw-accent-strong); }
+  .gw-builds li { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gw-space-2) var(--gw-space-3); }
+  .gw-builds__roles { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--gw-space-1); font-size: var(--gw-text-sm); }
+</style>

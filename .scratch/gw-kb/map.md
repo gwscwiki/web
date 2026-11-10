@@ -28,6 +28,8 @@ An architecture spec plus a working FR-first/EN Starlight skeleton (content coll
 
 <!-- one line per closed ticket: [title](issues/NN-slug.md): gist -->
 
+- [Design system & icons](../../docs/design-system.md) (2026-11-10): dark-first teal-gray theme with fantasy ornaments, layered tokens enforced by `check:styles`, `ui/` primitives. Icons are fetched at build time from GWW `/images/` for IDs in use, with manual overrides ([ADR 0002](../../docs/adr/0002-icons-from-gww-images.md)).
+
 - [Starlight capabilities](issues/02-starlight-capabilities.md): stay on Starlight 0.42 / Astro 7 (pinned). FR root is native; fallback is built in only one way (EN visitors see French), so EN-only pages would 404 in French. Data collections + `<StarlightPage>` cover generated pages.
 - [Skill & item data sources](issues/01-skill-and-item-data-sources.md): key by game ID; build-wars JSON gives official EN+FR skill and rune/insignia strings, filtered to IDs in use (storage superseded by Storage mapping); `@buildwars/gw-templates` for codes; consumables are a hand-kept list. ArenaNet policy: unofficial label, footer notice, never translate game text.
 - [Content model](issues/03-content-model.md): a Build is a core reference plus its own pasted template code, and swaps are derived. A core fixes 1–8 skills. Roles are stable per Zone, each running one Build (Builds can be shared). Party setups assign Duties. A Loadout says what is worn, Requirements how necessary it is. Prose has bar and gear blocks. Labels stay English; game text comes from data.
@@ -39,11 +41,10 @@ An architecture spec plus a working FR-first/EN Starlight skeleton (content coll
 
 ## Not yet specified
 
-- Skill icons: GWW refuses automated downloads, so decide how icons reach `src/assets/skill-icons/` (e.g. downloaded by hand and committed).
 - French names for professions and attributes are hand-entered in `src/lib/gw/names.ts`; check them against GWiki.fr.
 - Repo name and base path (the deploy pipeline itself is known; see Starlight capabilities). The link convention is settled (Information architecture), so this no longer blocks content.
 - Annotated route maps (e.g. griffs pull path) — format and tooling.
-- Visual design of skill bar, gear card, duty badge components. French players use English labels and game vocabulary, so decide whether French pages show the English skill name next to the official French one, and where skill nicknames appear.
+- Skill bar, gear card and duty badge are designed (docs/design-system.md). Still open: French players use English labels and game vocabulary, so decide whether French pages show the English skill name next to the official French one, and where skill nicknames appear.
 - Detailed filter/search UX on index pages.
 - Contribution workflow (PR template, content checklist) for other players. Contributors use Open Authoring (fork + pull request), and a few trusted players get write access (see Storage mapping), so this is mostly the PR template, content checklist and review rules.
 - SEO and social previews.

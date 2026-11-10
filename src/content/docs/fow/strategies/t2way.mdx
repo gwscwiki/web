@@ -1,0 +1,114 @@
+---
+kind: strategy
+title: T2Way
+description: Une FoW sûre, avec le coffre, accueillante pour les nouveaux joueurs.
+label: T2Way
+roles:
+  - role: fow/roles/t1
+    build: builds/sf-ranger/t2way-t1
+    duties:
+      - fow/duties/ramp-pull
+      - fow/duties/open-forge
+      - fow/duties/hunt
+      - fow/duties/bf
+      - fow/duties/tos
+      - fow/duties/khobay
+    route: pull shadows to skeles at ramp, open forge, hunt, burning forest, tos, khobay
+  - role: fow/roles/t2
+    build: builds/sf-assassin/ae-t2way
+    duties:
+      - fow/duties/ramp-pull
+      - fow/duties/camp
+      - fow/duties/menzies
+      - fow/duties/defend
+      - fow/duties/beach-wolf
+      - fow/duties/cave
+      - fow/duties/cave-wolf
+      - fow/duties/tos-lord
+    route: pull shadows to skeles at ramp, camp, menzies, defend, beach wolf, cave, cave wolf, tos lord
+  - role: fow/roles/mt
+    duties:
+      - fow/duties/first-ball
+      - fow/duties/forge
+      - fow/duties/north
+      - fow/duties/sheps
+      - fow/duties/forest-wolf
+      - fow/duties/griffs
+    route: first ball, forge, defend north, sheps, forest wolf, griffs
+    note:
+      fr: Assassin/Élémentaliste. La page Main Tank montre deux barres pour le T2way mais sans code ni attributs.
+      en: Assassin/Elementalist. The Main Tank page shows two T2way bars but no code or attributes.
+  - role: fow/roles/solo-vos
+    build: builds/vos/da
+    duties:
+      - fow/duties/toc
+      - fow/duties/top
+      - fow/duties/south
+      - fow/duties/sheps
+      - fow/duties/bridge
+      - fow/duties/griffs
+    route: toc, top forge, defend south, sheps, bridge, griffs
+  - role: fow/roles/vos
+    build: builds/vos/spiker
+    duties:
+      - fow/duties/spike
+    route: follow mt and spike his balls
+    note:
+      fr: Derviche/n’importe quel secondaire ; la page VoS donne une barre D/W.
+      en: Dervish/any secondary; the VoS page gives a D/W bar.
+  - role: fow/roles/ua
+    build: builds/ua/monk
+    duties:
+      - fow/duties/quests
+    route: follow mt, take quests at forge, ping for griffons
+    note:
+      fr: Moine/Parangon, ou un derviche joué en VoS.
+      en: Monk/Paragon, or a dervish played as a VoS.
+sources:
+  - title: T2Way
+    url: https://wiki.gwscr.com/wiki/T2Way
+    edited: 2026-09-17
+    site: Speedclear Wiki
+  - title: T1 (FoW)
+    url: https://wiki.gwscr.com/wiki/T1_(FoW)
+    edited: 2026-09-17
+    site: Speedclear Wiki
+  - title: T2 (FoW)
+    url: https://wiki.gwscr.com/wiki/T2_(FoW)
+    edited: 2026-09-17
+    site: Speedclear Wiki
+  - title: Main Tank (FoW)
+    url: https://wiki.gwscr.com/wiki/Main_Tank_(FoW)
+    edited: 2016-12-05
+    site: Speedclear Wiki
+  - title: VoS (FoW)
+    url: https://wiki.gwscr.com/wiki/VoS_(FoW)
+    edited: 2026-09-17
+    site: Speedclear Wiki
+  - title: UA (FoW)
+    url: https://wiki.gwscr.com/wiki/UA_(FoW)
+    edited: 2026-09-18
+    site: Speedclear Wiki
+---
+
+## Principe
+
+Le but du T2Way : une Fissure of Woe **sûre**, avec le coffre de fin, et accueillante pour les nouveaux joueurs. Deux tanks (T1, T2) se partagent la carte, le MT met les groupes en boule pour les VoS « spikers » qui le suivent, un VoS fait ses parties en solo, et un moine UA suit le MT, prend les quêtes à la forge et pinge pour les griffons.
+
+## Ce que la source ne donne pas
+
+- **MT** : la page Main Tank montre deux barres pour le T2way (l’une avec Sliver Armor et Armor of Earth, l’autre avec Dwarven Stability et Whirling Defense) sans code ni attributs, et sans dire laquelle est la version assassin. Aucun build n’est donc rattaché à ce rôle ici.
+- **Équipement** : les pages de rôle renvoient à des pages d’équipement par profession, non reprises ici. L’équipement affiché vient de la page roll-way, via les builds.
+
+## Conseils VoS
+
+Résumé de la section « How do I derv? » de la page VoS :
+
+- Consommables : au minimum Cupcake (course), Pumpkin Pie (vitesse d’attaque) et Candy Corn (+1 attributs) ; si possible Apple, Egg et War Supply.
+- Courir au bâton, ne passer à la faux que pour se battre.
+- Pré-lancer les enchantements jusqu’à 20 s avant le spike (surtout Sand Shards et Mystic Regeneration), et se replacer pour un spike propre.
+- Si le VoS doit lancer Honor : sauter au bâton, lancer Honor, se replacer, passer à la faux, spiker.
+- Ne pas se retirer Sand Shards, VoS ni Mirage ; Eremite’s seulement après Staggering.
+- Sous l’aggro des guerriers des ombres, pas de Mirage (Griffon’s Sweep renverse).
+
+La source signale que la page VoS doit être mise à jour après l’équilibrage 2026.

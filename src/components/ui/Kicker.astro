@@ -1,0 +1,23 @@
+---
+/**
+ * Kicker — small, widely tracked uppercase label above a title ("WELCOME TO", "CHOOSE YOUR PATH").
+ *
+ *   <Kicker>Optimisation</Kicker>
+ */
+import type { HTMLTag } from 'astro/types';
+
+interface Props {
+  as?: HTMLTag;
+  tone?: 'accent' | 'info' | 'muted';
+  class?: string;
+}
+const { as: Tag = 'p', tone = 'accent', class: cls } = Astro.props;
+---
+
+<Tag class:list={['gw-kicker', `gw-kicker--${tone}`, cls]}><slot /></Tag>
+
+<style>
+  .gw-kicker { margin: 0; }
+  .gw-kicker--info { color: var(--gw-tone-info-fg); }
+  .gw-kicker--muted { color: var(--gw-text-subtle); }
+</style>

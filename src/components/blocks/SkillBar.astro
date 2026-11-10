@@ -1,12 +1,12 @@
 ---
 /** Bar block from a raw template code: display only, not a Build (Storage mapping). */
 import { getEntry } from 'astro:content';
-import { Image } from 'astro:assets';
-import type { ImageMetadata } from 'astro';
 import { decodeBar } from '../../lib/gw/templates';
 import { attributeName, PROFESSIONS, professionName } from '../../lib/gw/names';
 import { renderDescription } from '../../lib/gw/describe';
+import { iconFor } from '../../lib/gw/icons';
 import { langFromLocals, t } from '../../lib/ui';
+import { Button, GameIcon, Stat, Tag, Tooltip } from '../ui';
 
 interface Props {
   code: string;
@@ -18,93 +18,134 @@ const lang = langFromLocals(Astro.locals);
 const _ = t(lang);
 const bar = decodeBar(code);
 
-// Local icons: src/assets/skill-icons/<skill id>.(jpg|png|webp). Missing → placeholder tile.
-const icons = import.meta.glob<{ default: ImageMetadata }>('/src/assets/skill-icons/*.{jpg,png,webp}', { eager: true });
-const iconFor = (id: number) =>
-  Object.entries(icons).find(([p]) => p.replace(/^.*\//, '').replace(/\.\w+$/, '') === String(id))?.[1].default;
-
 const slots = await Promise.all(
   bar.skills.map(async (id, i) => {
     const s = id ? (await getEntry('skills', String(id)))?.data : undefined;
     if (id && !s) throw new Error(`SkillBar: skill ${id} missing from the skills collection (code ${code})`);
-    return { i, id, s, icon: id ? iconFor(id) : undefined, mark: marks[i] };
+    return { i, id, s, icon: iconFor('skill', id), mark: marks[i] };
   }),
 );
+const ring = { swap: 'accent', filled: 'success' } as const;
+const usedMarks = [...new Set(Object.values(marks))];
 const sec = bar.secondary ? PROFESSIONS[bar.secondary].abbr : '–';
 ---
 
 <figure class="gw-bar not-content">
-  <figcaption>
-    <strong title={`${professionName(bar.primary, lang)} / ${professionName(bar.secondary, lang)}`}>
+  <figcaption class="gw-bar__head">
+    <Tag tone="accent" title={`${professionName(bar.primary, lang)} / ${professionName(bar.secondary, lang)}`}>
       {PROFESSIONS[bar.primary].abbr}/{sec}
-    </strong>
-    <span class="gw-attrs">
-      {Object.entries(bar.attributes).map(([a, r]) => <span>{attributeName(Number(a), lang)} {r}</span>)}
-    </span>
+    </Tag>
+    {Object.entries(bar.attributes).map(([a, r]) => (
+      <span class="gw-bar__attr">{attributeName(Number(a), lang)} <strong>{r}</strong></span>
+    ))}
   </figcaption>
-  <ol>
+
+  <ol class="gw-bar__slots">
     {
       slots.map(({ id, s, icon, mark }) => (
-        <li class:list={['gw-slot', mark && `gw-${mark}`, !id && 'gw-empty']} tabindex={id ? 0 : undefined}>
+        <li class="gw-bar__slot">
           {s ? (
-            <>
-              {icon ? (
-                <Image src={icon} alt="" width={64} height={64} />
-              ) : (
-                <span class="gw-icon-ph" aria-hidden="true">{s.name.en.replace(/[^A-Z]/g, '').slice(0, 3)}</span>
-              )}
-              <span class="gw-name">
-                {s.name[lang]}
-                {s.nickname && <em> ({s.nickname})</em>}
+            <Tooltip>
+              <span class="gw-bar__skill">
+                <GameIcon src={icon} label={s.name[lang]} size="lg" elite={s.elite} ring={mark && ring[mark]} decorative />
               </span>
-              <span class="gw-tip" role="tooltip">
-                <strong>{s.name[lang]}</strong>
-                {lang === 'fr' && <small> — {s.name.en}</small>}
-                <span class="gw-stats">
-                  {s.energy > 0 && <span>{_('energy')} {s.energy}</span>}
-                  {s.adrenaline > 0 && <span>Adr. {s.adrenaline}</span>}
-                  <span>{_('activation')} {s.activation}s</span>
-                  {s.recharge > 0 && <span>{_('recharge')} {s.recharge}s</span>}
+              <Fragment slot="tip">
+                <strong class="gw-bar__tip-name">{s.name[lang]}</strong>
+                {lang === 'fr' && <span class="gw-bar__tip-en">{s.name.en}</span>}
+                <span class="gw-bar__stats">
+                  {s.energy > 0 && <Stat kind="energy" value={s.energy} label={_('energy')} />}
+                  {s.adrenaline > 0 && <Stat kind="adrenaline" value={s.adrenaline} label={_('adrenaline')} />}
+                  {s.sacrifice > 0 && <Stat kind="sacrifice" value={`${s.sacrifice}%`} label={_('sacrifice')} />}
+                  <Stat kind="activation" value={s.activation} label={_('activation')} />
+                  {s.recharge > 0 && <Stat kind="recharge" value={s.recharge} label={_('recharge')} />}
                 </span>
-                <span set:html={renderDescription(s.description[lang])} />
-              </span>
-            </>
+                <span class="gw-bar__desc" set:html={renderDescription(s.description[lang])} />
+              </Fragment>
+            </Tooltip>
           ) : (
-            <span class="gw-icon-ph" aria-hidden="true" />
+            <span class="gw-bar__skill">
+              <GameIcon label="" size="lg" empty />
+              <span class="gw-bar__name gw-muted">{_('openSlot')}</span>
+            </span>
           )}
         </li>
       ))
     }
   </ol>
-  <div class="gw-code">
-    <code>{code}</code>
-    <button type="button" data-copy={code}>{_('copy')}</button>
+
+  <div class="gw-bar__foot">
+    <code class="gw-bar__code">{code}</code>
+    <Button variant="ghost" size="sm" data-copy={code} data-copied={_('copied')}>{_('copy')}</Button>
+    {usedMarks.length > 0 && (
+      <span class="gw-bar__legend">
+        {usedMarks.map((m) => <Tag tone={ring[m]} size="sm">{_(m === 'swap' ? 'markSwap' : 'markFilled')}</Tag>)}
+      </span>
+    )}
   </div>
 </figure>
 
 <script>
-  document.querySelectorAll<HTMLButtonElement>('.gw-bar button[data-copy]').forEach((b) =>
-    b.addEventListener('click', () => navigator.clipboard.writeText(b.dataset.copy!)),
+  document.querySelectorAll<HTMLButtonElement>('.gw-bar [data-copy]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      await navigator.clipboard.writeText(b.dataset.copy!);
+      const label = b.firstElementChild as HTMLElement;
+      const before = label.textContent;
+      label.textContent = b.dataset.copied ?? before;
+      setTimeout(() => (label.textContent = before), 1500);
+    }),
   );
 </script>
 
 <style>
-  .gw-bar { border: 1px solid var(--sl-color-gray-5); border-radius: 0.5rem; padding: 0.75rem; margin-block: 1rem; }
-  figcaption { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: baseline; font-size: var(--sl-text-sm); }
-  .gw-attrs { display: flex; flex-wrap: wrap; gap: 0.75rem; color: var(--sl-color-gray-2); }
-  ol { list-style: none; padding: 0; margin: 0.75rem 0; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 0.4rem; }
-  .gw-slot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; text-align: center; font-size: var(--sl-text-xs); line-height: 1.2; }
-  .gw-slot img, .gw-icon-ph { width: 56px; height: 56px; border-radius: 4px; border: 2px solid transparent; }
-  .gw-icon-ph { display: grid; place-items: center; background: var(--sl-color-gray-5); color: var(--sl-color-gray-2); font-weight: 700; }
-  .gw-empty .gw-icon-ph { background: transparent; border: 2px dashed var(--sl-color-gray-4); }
-  .gw-swap :is(img, .gw-icon-ph) { border-color: var(--sl-color-orange); }
-  .gw-filled :is(img, .gw-icon-ph) { border-color: var(--sl-color-green); }
-  .gw-name em { color: var(--sl-color-gray-3); }
-  .gw-tip { display: none; position: absolute; z-index: 10; top: 100%; left: 50%; transform: translateX(-50%); width: 18rem; padding: 0.6rem; text-align: start; font-size: var(--sl-text-xs); background: var(--sl-color-black); border: 1px solid var(--sl-color-gray-4); border-radius: 0.4rem; }
-  .gw-slot:hover .gw-tip, .gw-slot:focus .gw-tip { display: block; }
-  .gw-stats { display: flex; gap: 0.6rem; margin-block: 0.3rem; color: var(--sl-color-gray-3); }
-  .gw-tip :global(.gw-gray) { color: var(--sl-color-gray-3); }
-  .gw-code { display: flex; gap: 0.5rem; align-items: center; font-size: var(--sl-text-xs); }
-  .gw-code button { cursor: pointer; font-size: inherit; }
-  @media (max-width: 40rem) { ol { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .gw-bar {
+    margin-block: var(--gw-space-5);
+    padding: var(--gw-space-4);
+    border: 1px solid var(--gw-border);
+    border-radius: var(--gw-radius-lg);
+    background: var(--gw-surface-1);
+    box-shadow: var(--gw-shadow-card);
+  }
+  .gw-bar__head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--gw-space-2) var(--gw-space-4); font-size: var(--gw-text-sm); }
+  .gw-bar__attr { color: var(--gw-text-muted); }
+  .gw-bar__attr strong { color: var(--gw-text-strong); font-variant-numeric: tabular-nums; }
+
+  .gw-bar__slots {
+    list-style: none;
+    margin: var(--gw-space-4) 0;
+    padding: var(--gw-space-3);
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: var(--gw-space-2);
+    border-radius: var(--gw-radius-md);
+    background: var(--gw-surface-inset);
+    border: 1px solid var(--gw-divider);
+  }
+  .gw-bar__slot { margin: 0; display: flex; justify-content: center; }
+  .gw-bar__slot :global(.gw-tt) { border-radius: var(--gw-radius-sm); }
+  .gw-bar__skill { display: flex; flex-direction: column; align-items: center; gap: var(--gw-space-2); text-align: center; }
+  .gw-bar__name { font-size: var(--gw-text-2xs); line-height: 1.25; color: var(--gw-text); overflow-wrap: break-word; hyphens: auto; }
+
+  .gw-bar__tip-name { display: block; font-family: var(--gw-font-display); font-size: var(--gw-text-sm); color: var(--gw-tooltip-fg); }
+  .gw-bar__tip-en { display: block; color: var(--gw-tooltip-muted); font-size: var(--gw-text-2xs); }
+  .gw-bar__stats { display: flex; flex-wrap: wrap; gap: var(--gw-space-3); margin-block: var(--gw-space-2); color: var(--gw-tooltip-fg); }
+  .gw-bar__stats :global(.gw-stat) { color: var(--gw-tooltip-fg); }
+  .gw-bar__desc { display: block; }
+  .gw-bar__desc :global(.gw-gray) { color: var(--gw-tooltip-muted); }
+
+  .gw-bar__foot { display: flex; flex-wrap: wrap; gap: var(--gw-space-2); align-items: center; }
+  .gw-bar__code {
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--gw-radius-sm);
+    background: var(--gw-surface-inset);
+    border: 1px solid var(--gw-divider);
+    font-family: var(--gw-font-mono);
+    font-size: var(--gw-text-2xs);
+    color: var(--gw-text-muted);
+    overflow-wrap: anywhere;
+  }
+  .gw-bar__legend { display: flex; gap: var(--gw-space-2); margin-inline-start: auto; }
+
+  @media (max-width: 40rem) {
+    .gw-bar__slots { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
 </style>
